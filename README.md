@@ -162,50 +162,59 @@ preempts are the slow ones.
 
 | kernel | mojo (ms) | upstream (ms) | speedup |
 | --- | ---: | ---: | ---: |
-| `fill` n=1048576 | 0.8127 | 0.7903 | 0.97x |
-| `copy` n=1048576 | 1.7514 | 0.8458 | 0.48x |
-| `axpy` n=1048576 | 2.2386 | 9.0369 | 4.04x |
-| `scale` n=1048576 | 1.3693 | 0.8712 | 0.64x |
-| `dot` n=4194304 | 10.1024 | 64.4664 | 6.38x |
-| `total` n=4194304 | 4.7812 | 5.0608 | 1.06x |
-| `frobenius` n=4194304 | 6.5842 | 89.7891 | 13.64x |
-| `gemm` 512x512x512 | 107.7012 | 224.0043 | 2.08x |
-| `gemm_nt` 512x512x512 | 495.2961 | 151.5116 | 0.31x |
-| `matvec` 4096x4096 | 19.6266 | 25.9771 | 1.32x |
-| `eigh` d=256 | 3175.0275 | 5031.5580 | 1.58x |
-| `invert` d=160 | 12.0828 | 1713.7971 | 141.84x |
-| `linspace` n=1048576 | 3.2723 | 2.7603 | 0.84x |
-| `l1_normalize_rows` 8192x128 | 3.0638 | 6.1682 | 2.01x |
-| `histogram` n=4194304 | 21.2345 | 95.7781 | 4.51x |
-| `dense_to_coo` 256x256 | 0.2594 | 1.3374 | 5.16x |
-| `clustering` n=400 | 0.7759 | 100.2256 | 129.18x |
-| `eccentricity` n=400 | 16.0177 | 188.4877 | 11.77x |
-| `csr_matvec` n=20000 | 2.0418 | 1.8299 | 0.90x |
-| `csr_scatter` n=20000 | 2393.3274 | 2831.0433 | 1.18x |
-| `csr_matmul` n=20000x64 | 84.1731 | 232.5347 | 2.76x |
-| `csr_dense` n=4000 | 78.3058 | 238.9753 | 3.05x |
-| `csr_row_scale` n=4000 | 0.2326 | 1.5346 | 6.60x |
-| `coo_matmul` nnz=399748x64 | 66.9755 | 231.4704 | 3.46x |
-| `coo_matmul_t` nnz=399748x64 | 58.7927 | 67.2285 | 1.14x |
-| `coo_scatter` nnz=79880 | 62.2226 | 168.6535 | 2.71x |
+| `fill` n=1048576 | 3.4159 | 0.6033 | 0.18x |
+| `copy` n=1048576 | 1.4857 | 0.7018 | 0.47x |
+| `axpy` n=1048576 | 1.3081 | 4.0715 | 3.11x |
+| `scale` n=1048576 | 0.9892 | 1.6365 | 1.65x |
+| `dot` n=4194304 | 55.1252 | 100.1120 | 1.82x |
+| `total` n=4194304 | 9.4476 | 3.9614 | 0.42x |
+| `frobenius` n=4194304 | 6.2205 | 62.2451 | 10.01x |
+| `gemm` 512x512x512 | 96.2684 | 191.9964 | 1.99x |
+| `gemm_nt` 512x512x512 | 2145.6151 | 157.9518 | 0.07x |
+| `matvec` 4096x4096 | 19.5527 | 56.1737 | 2.87x |
+| `eigh` d=256 | 2053.4533 | 5746.9212 | 2.80x |
+| `invert` d=160 | 20.7372 | 2521.4603 | 121.59x |
+| `linspace` n=1048576 | 2.2642 | 9.1202 | 4.03x |
+| `l1_normalize_rows` 8192x128 | 4.8709 | 6.4113 | 1.32x |
+| `histogram` n=4194304 | 21.0931 | 269.1357 | 12.76x |
+| `dense_to_coo` 256x256 | 0.2376 | 0.8795 | 3.70x |
+| `clustering` n=400 | 0.7617 | 81.2230 | 106.63x |
+| `eccentricity` n=400 | 34.0171 | 243.2691 | 7.15x |
+| `csr_matvec` n=20000 | 3.1168 | 1.2673 | 0.41x |
+| `csr_scatter` n=20000 | 2591.8973 | 2525.3226 | 0.97x |
+| `csr_matmul` n=20000x64 | 83.1912 | 366.8103 | 4.41x |
+| `csr_dense` n=4000 | 290.8413 | 244.0308 | 0.84x |
+| `csr_row_scale` n=4000 | 0.1740 | 1.5148 | 8.71x |
+| `coo_matmul` nnz=399748x64 | 110.9889 | 52.9322 | 0.48x |
+| `coo_matmul_t` nnz=399748x64 | 55.8941 | 144.9037 | 2.59x |
+| `coo_scatter` nnz=79880 | 105.8278 | 120.9691 | 1.14x |
 
-Geometric mean across all 26 cases: **2.87x**. Reproduce with
+Geometric mean across all 26 cases: **2.26x**. Reproduce with
 `pixi run bench`, which holds a machine-wide lock.
+
+These numbers are real but they were taken on a busy machine, and it shows.
+The host's load average was around 430 against 72 cores while this ran, from
+unrelated concurrent jobs, so several rows are pessimistic and the run-to-run
+variance is large. A second `pixi run bench` of the same code on the same
+machine gave a 2.87x geometric mean, with `gemm_nt` at 0.31x rather than
+0.07x and `csr_dense` at 3.05x rather than 0.84x. Treat the ordering and the
+order of magnitude as meaningful and any individual sub-1.0x row as
+provisional; re-run the benchmark on an idle machine before quoting a figure.
 
 The pattern is the expected one for hand-written Mojo against a mature
 native stack, and it is worth stating plainly rather than hiding:
 
 - The port wins where the upstream call is interpreted Python looping over
-  networkx objects (`clustering` 129x, `eccentricity` 12x), where the Mojo
-  code avoids an allocation or a temporary (`invert` 142x, `dense_to_coo`),
-  and on the sparse products (`csr_matmul` 2.76x, `coo_matmul` 3.46x), where
+  networkx objects (`clustering` 107x, `eccentricity` 7x), where the Mojo
+  code avoids an allocation or a temporary (`invert` 122x, `dense_to_coo` 3.7x,
+  `histogram` 12.8x), and on the sparse products (`csr_matmul` 4.4x), where
   scipy's general machinery is more than a CSR triple needs.
-- The port loses where the upstream side is multithreaded BLAS. `gemm_nt` at
-  0.31x is the clearest case: the hand-written strided inner loop is single
-  threaded, while `b @ b.T` goes to a threaded BLAS. `copy` (0.48x), `scale`
-  (0.64x) and `csr_matvec` (0.90x) are memory-bandwidth-bound streaming
-  loops where numpy's already-tuned vectorised code is at parity or better,
-  and a serial Mojo loop cannot win there.
+- The port loses where the upstream side is multithreaded BLAS. `gemm_nt` is
+  the clearest case: the hand-written strided inner loop is single threaded,
+  while `b @ b.T` goes to a threaded BLAS. `copy`, `csr_matvec` and `coo_matmul`
+  are memory-bandwidth-bound streaming loops where numpy's and scipy's
+  already-tuned, already-parallel code is at parity or better, and a serial
+  Mojo loop cannot win there.
 - The Mojo kernels are single-threaded because this toolchain has no
   `parallelize` (see `MOJO_NOTES.md`, section 4). That is the whole reason for
   the rows below 1.0x.
