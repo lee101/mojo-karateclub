@@ -1,224 +1,403 @@
 # mojo-karateclub
 
-Mojo kernels for the numerical primitives that
-[karateclub](https://github.com/benedekrozemberczki/karateclub) delegates to
-numpy, scipy.sparse, networkx and LAPACK.
+The compute-bound half of
+[karateclub](https://github.com/benedekrozemberczki/karateclub) 1.3.3, in Mojo.
 
-## What this is, and what it is not
+karateclub's estimators are short: a graph goes in, a few lines of numpy or
+scipy go by, and an embedding comes out. What is worth rewriting is the work
+inside those few lines - the degree profiles, the pseudo-inverse of a normalized
+Laplacian, the count-min sketches, the second-order walk probabilities, the MD5
+of every Weisfeiler-Lehman label. That work is here, as Mojo kernels, behind
+the same class names, the same constructor arguments in the same order, and the
+same numerical results.
 
-**This is not a port of karateclub's embedders.** None of `DeepWalk`,
-`Node2Vec`, `LaplacianEigenmaps`, `Graph2Vec`, `NetMF`, `GraphWave`,
-`FeatherNode`, `GEMSEC` or the rest of the karateclub model zoo is
-reimplemented here. Those models are built out of the primitives below, and
-this repository provides those primitives in Mojo behind a ctypes API.
+The estimators themselves keep upstream's shape, so this is a drop-in for the
+covered subset:
 
-karateclub itself does almost no arithmetic. It calls into:
+```python
+import networkx as nx
+import mojokarateclub
 
-| upstream call | used for | this repo |
-| --- | --- | --- |
-| `numpy` elementwise ops, reductions | feature scaling, normalisation | `fill`, `copy`, `axpy`, `scale`, `dot`, `total`, `sum_squares`, `frobenius` |
-| `numpy` / BLAS products | propagation, embedding construction | `gemm`, `gemm_nt`, `matvec` |
-| `numpy.linalg.eigh` (LAPACK) | Laplacian and proximity decompositions | `eigh` (cyclic Jacobi) |
-| `numpy.linalg.inv` (LAPACK) | matrix inversions | `invert` (Gauss-Jordan) |
-| `scipy.sparse` CSR algebra | adjacency products, densification | `csr_matvec`, `csr_matmul`, `csr_dense`, `csr_scatter`, `csr_row_scale` |
-| `scipy.sparse` COO algebra | the same, from coordinate form | `coo_matmul`, `coo_matmul_t`, `coo_scatter` |
-| `networkx` graph metrics | clustering, eccentricity | `clustering`, `eccentricity` |
-| `numpy` / `sklearn` utilities | sampling, binning, sparsity conversion | `linspace`, `histogram`, `l1_normalize_rows`, `dense_to_coo` |
+graph = nx.karate_club_graph()
+model = mojokarateclub.LDP(bins=32)
+model.fit([graph])
+model.get_embedding().shape      # (1, 160)
+```
 
-**Not covered:** every karateclub estimator, the `fit` / `get_embedding`
-estimator API, graph construction and preprocessing, random-walk sampling,
-the Gensim and PyGSP dependencies, and anything GPU. There is no GPU path
-here; the pinned Mojo toolchain does not ship the host API needed to write
-one (see `MOJO_NOTES.md`, section 5). Everything is single-threaded CPU code:
-`parallelize` does not exist in this toolchain either.
+## Install and run
 
-Two kernels diverge from their upstream counterpart in a way that is
-observable, and both are documented in place:
-
-- `eigh` uses cyclic Jacobi, not LAPACK's divide and conquer. Eigenvalues are
-  returned ascending with matching eigenvector columns, and the eigenvector
-  *signs* are arbitrary. Every consumer of a basis-invariant
-  `U @ diag(f) @ U.T` is unaffected; anything that pins a sign must do so
-  itself.
-- `eccentricity` returns `-1.0` for a node that cannot reach the whole graph,
-  where `networkx.eccentricity` raises. This is a deliberate choice so a
-  disconnected graph yields data rather than an exception.
-
-## Install
-
-Requires Linux x86-64 and the pinned Mojo toolchain from `pixi.toml`.
+Linux x86-64, and the Mojo toolchain pinned in `pixi.toml`.
 
 ```bash
 pixi install
-pixi run build
+pixi run build      # mojo build --emit shared-lib -> dist/libmojo-karateclub.so
+pixi run test       # pytest
+pixi run vectors    # regenerate the upstream reference vectors
+pixi run bench      # benchmark against the real karateclub
 ```
 
-`build` compiles `src/mojokarateclub/capi.mojo` into
-`dist/libmojokarateclub.so` with `mojo build --emit shared-lib`. The Python
-package lives in `python/` and is put on `PYTHONPATH` by the pixi activation
-environment, so `pixi run python ...` and `pixi run test` see it without an
-install step. To use the library from elsewhere, either keep using `pixi run`
-or point `PYTHONPATH` at `python/` yourself.
+`pixi install` creates two environments. `default` has the Mojo toolchain,
+Python 3.13 and this package. `upstream` has Python 3.9 and the real
+karateclub 1.3.3, and exists only so the parity tests and the benchmark have a
+genuine reference to compare against; it is a separate pixi environment
+because karateclub pins `numpy<1.23`, `networkx<2.7` and `pandas<=1.3.5`, none
+of which build on 3.13.
 
 ## Usage
 
+Every estimator takes a networkx graph, exactly as upstream does, and the
+self-loop pass `Estimator._ensure_integrity` runs before any model sees the
+graph is upstream's.
+
 ```python
-import numpy as np
-import mojokarateclub as mk
+import networkx as nx
+import mojokarateclub
 
-adjacency = np.array(
-    [[0.0, 1.0, 1.0, 0.0],
-     [1.0, 0.0, 1.0, 1.0],
-     [1.0, 1.0, 0.0, 0.0],
-     [0.0, 1.0, 0.0, 0.0]]
-)
-indptr = np.array([0, 2, 5, 7, 8], dtype=np.int32)
-indices = np.array([1, 2, 0, 2, 3, 0, 1, 2], dtype=np.int32)
+graph = nx.newman_watts_strogatz_graph(300, 4, 0.1, seed=42)
 
-print(mk.clustering(indptr, indices))    # [1.  0.5 1.  0. ]
-print(mk.eccentricity(indptr, indices))  # [2. 1. 2. 2.]
+# graph-level, fit over a list of graphs
+for model in (
+    mojokarateclub.LDP(bins=32),
+    mojokarateclub.FGSD(hist_bins=200, hist_range=20),
+    mojokarateclub.SF(dimensions=32),
+    mojokarateclub.NetLSD(scale_steps=32, approximations=16),
+    mojokarateclub.Graph2Vec(wl_iterations=2, dimensions=64, workers=1),
+):
+    model.fit([graph])
+    print(type(model).__name__, model.get_embedding().shape)
 
-laplacian = np.diag(adjacency.sum(axis=1)) - adjacency
-values, vectors = mk.eigh(laplacian)
-print(np.round(values, 6))               # [-0.  1.  3.  4.]
+# node-level, fit over one graph
+for model in (
+    mojokarateclub.LaplacianEigenmaps(dimensions=8),
+    mojokarateclub.NodeSketch(dimensions=16, iterations=2),
+    mojokarateclub.FirstOrderLINE(dimensions=8, epochs=5, verbose=False),
+    mojokarateclub.SecondOrderLINE(dimensions=8, epochs=5, verbose=False),
+    mojokarateclub.DeepWalk(walk_number=4, walk_length=20, dimensions=8, workers=1),
+    mojokarateclub.Node2Vec(walk_number=4, walk_length=20, dimensions=8, workers=1),
+    mojokarateclub.Walklets(walk_number=4, walk_length=20, dimensions=8, workers=1),
+    mojokarateclub.Diff2Vec(diffusion_number=4, diffusion_cover=20, dimensions=8, workers=1),
+):
+    model.fit(graph)
+    print(type(model).__name__, model.get_embedding().shape)
 ```
 
-That example is the one in this README, run verbatim; its output is shown
-above.
+The low-level kernels are exported too, and take numpy arrays:
+`fill`, `copy`, `axpy`, `scale`, `dot`, `total`, `sum_squares`, `frobenius`,
+`gemm`, `gemm_nt`, `matvec`, `eigh`, `invert`, `linspace`, `histogram`,
+`l1_normalize_rows`, `dense_to_coo`, `md5_digest`, and the `csr_*` / `coo_*`
+family. See `python/mojokarateclub/linalg.py`.
 
-Routines documented as in place (`fill`, `scale`, `axpy`, `copy`,
-`l1_normalize_rows`, `csr_row_scale`) mutate the array you pass and return it.
-Everything else returns a fresh array.
+## What is covered
 
-## Contract
+Graph level (`karateclub.graph_embedding`):
 
-These kernels write through caller-owned pointers and never allocate, so a
-wrong buffer is memory corruption rather than an exception. The wrapper
-therefore validates before every call:
+| estimator | what is in Mojo | what stays upstream |
+| --- | --- | --- |
+| `LDP` | the whole `_calculate_ldp`: log degrees, the `n x 5` profile block, the five histograms | nothing |
+| `FGSD` | normalized Laplacian, the Moore-Penrose pseudo-inverse, the similarity matrix, the histogram | nothing |
+| `SF` | normalized Laplacian, the eigendecomposition, the padding arithmetic | nothing |
+| `NetLSD` | self-loop stripping, normalized Laplacian, the `k` extreme eigenvalues, the up/down interpolation, the heat kernel trace | nothing |
+| `Graph2Vec` | the Weisfeiler-Lehman recursion and its MD5 | `gensim`'s `Doc2Vec`, as upstream |
 
-- float buffers must be `float64`, index buffers `int32`; there is no silent
-  narrowing. Anything else raises `TypeError`.
-- every buffer must be C-contiguous; a strided view raises `ValueError`
-  rather than being read with the wrong stride.
-- in-place routines require a writeable array.
-- a CSR triple must start at `indptr[0] == 0`, be non-decreasing, end at
-  `indptr[-1] == len(indices)`, and carry `values` of the same length as
-  `indices`. A COO triple must have `rows`, `cols` and `values` of equal
-  length and non-negative indices.
-- column and row indices are range-checked against the destination before the
-  call, so a dangling index raises instead of writing out of bounds.
-- `eigh` raises if Jacobi runs out of sweeps rather than returning an
-  unconverged decomposition, and `invert` raises `numpy.linalg.LinAlgError` on
-  an exactly singular pivot.
+Node level (`karateclub.node_embedding.neighbourhood`):
 
-## How it works
+| estimator | what is in Mojo | what stays upstream |
+| --- | --- | --- |
+| `LaplacianEigenmaps` | normalized Laplacian, the eigendecomposition, the eigenvector selection | nothing |
+| `NodeSketch` | the whole fit: the MT19937 hash matrix, every sketch round, the SLA augmentation | nothing |
+| `FirstOrderLINE` | the whole fit: the MT19937 draws, both batches, the scatter, the decay | nothing |
+| `SecondOrderLINE` | the same, with the two embedding tables | nothing |
+| `DeepWalk` | `RandomWalker.do_walk` / `do_walks` | `gensim`'s `Word2Vec` |
+| `Node2Vec` | `BiasedRandomWalker.do_walk` / `do_walks`, including the `p`/`q` weighting | `gensim`'s `Word2Vec` |
+| `Walklets` | `RandomWalker` and `_select_walklets` | `gensim`'s `Word2Vec` |
+| `Diff2Vec` | `EulerianDiffuser.do_diffusions` / `_run_diffusion_process`: the growth and the Eulerian tour | `gensim`'s `Word2Vec` |
 
-`src/mojokarateclub/kclinalg.mojo` holds the kernels. They take
-`Pointer[Float64, AnyOrigin[mut=True]]` and write into caller-owned buffers;
-nothing in that file allocates, so buffer lifetime stays the caller's problem.
+Utilities (`karateclub.utils`): `RandomWalker`, `BiasedRandomWalker`,
+`EulerianDiffuser`, `WeisfeilerLehmanHashing`, and the MT19937 generator they
+draw from.
 
-`src/mojokarateclub/capi.mojo` is the C ABI shim. Mojo pointers are
-non-nullable and so cannot be parameters of an `abi("C")` function, so every
-buffer crosses the boundary as a 64-bit `Int` address and is rebuilt inside
-the wrapper with `Pointer[Float64, AnyOrigin[mut=True]](unsafe_from_address=)`.
-The address is the load-bearing detail: Mojo `Int` is 64 bits, so the ctypes
-declarations use `c_int64`. A narrower `c_int` would truncate a heap address
-into a wild pointer and kill the process with no diagnostic from either side.
-A test asserts that no argument type in the signature table is narrower than
-`c_int64`.
+## What is not covered
 
-`python/mojokarateclub/__init__.py` holds the ctypes glue. Buffers are always
-row-major, contiguous `float64` or `int32` numpy arrays, so a kernel index is
-a flat offset. Address extraction, dtype and contiguity checks, and the
-validation above all live on the Python side, which is the only place that can
-raise.
+Everything else in karateclub, and it is most of the library: the community
+detectors, the attributed embedders (`BANE`, `MUSAE`, `TENE`, `TADW`, `ASNE`,
+`AE`, `FSCNMF`, `FeatherNode`, `SINE`), the remaining neighbourhood models
+(`HOPE`, `NetMF`, `GraRep`, `NMFADMM`, `RandNE`, `SocioDim`, `GLEE`, `BoostNE`),
+the structural models (`GraphWave`, `RolX`, `NEU`, `Role2Vec`) and the rest of
+`graph_embedding` (`GL2Vec`, `GeoScattering`, `FeatherGraph`,
+`WaveletCharacteristic`).
 
-The elementwise and reduction kernels are hand-vectorised with a compile-time
-width of 4 `float64` lanes (`comptime W = 4`), running the SIMD body while
-`i + W <= n` and a scalar tail for the remainder. The CSR and COO kernels
-accumulate through the same `axpy` primitive, so the SIMD path is shared by
-every sparse product.
+The reason is the same in every case: the part of the model that costs
+something is a call into a library that is already fast. `HOPE` and `GraRep`
+spend their time in `scipy.sparse.linalg.svds` and `sklearn`'s
+`TruncatedSVD`; `GraphWave` and `NetMF` in ARPACK; `FeatherGraph` in `gf`;
+`GeoScattering` in PyGSP. Rewriting a thin wrapper around LAPACK buys nothing.
+The models here are the ones whose arithmetic *is* the model.
 
-## Tests
+One karateclub behaviour is deliberately not reproduced, because it is a defect
+rather than design and a caller can work around it:
 
-```bash
-pixi run test
-```
+- `eccentricity` returns `-1.0` for a node that cannot reach the whole graph,
+  where `networkx.eccentricity` raises.
 
-Every exported symbol is covered. Dense kernels are checked against numpy;
-`eigh` and `invert` against LAPACK through `numpy.linalg`; the two graph
-kernels against reference implementations written from the algorithm in the
-test file, and separately against real `networkx` in the benchmark. The
-validation rules in the section above each have a test that asserts the
-rejection.
+The `verbose` flag on both `LINE` classes prints a plain line where upstream
+draws a tqdm bar, because a progress bar is not a number; the flag, its default
+and its position in the argument list are upstream's.
+
+## Documented divergences
+
+Where the port is not bit-identical, this is where it is not, and why.
+
+1. **The eigensolver is a dense symmetric Jacobi sweep, not ARPACK.** `SF`,
+   `NetLSD`, `FGSD` and `LaplacianEigenmaps` all reach for
+   `scipy.sparse.linalg.eigsh`, which is a restarted Lanczos on the sparse
+   matrix. The port diagonalises the dense `n x n` matrix instead.
+   The spectrum agrees to about 1e-14, and so do the eigenvectors, but
+   eigenvector *signs* are arbitrary on both sides and the basis inside a
+   degenerate eigenspace is arbitrary as well - the `isolated` fixture has six
+   zero eigenvalues and asks for eight vectors, so which two of the four
+   1.5-eigenvectors come back is not determined by anything. The tests compare
+   the projector onto the returned subspace and the eigenvector residual, not
+   the columns.
+   `LaplacianEigenmaps`' `maximum_number_of_iterations` is the ARPACK iteration
+   cap and has no dense counterpart; it is accepted and unused, and the module
+   says so.
+2. **`Diff2Vec` draws from the port's MT19937, and its growth stops when the
+   infected set can grow no further.** Upstream's `random.sample` and
+   `random.choice` are CPython's `_random`, so the tours are not upstream's
+   for a given seed. The second difference is a fix rather than a choice:
+   upstream's `while infected_counter < self.diffusion_cover` never
+   terminates once the cover exceeds the source's component, so
+   `EulerianDiffuser(10, 80)` on a 34-node graph hangs. The kernel carries a
+   count of the edges leaving the infected set and stops when it reaches
+   zero, which is exactly the condition under which no further infection is
+   possible. Whenever such an edge does exist the walk can still find it, so
+   the two agree wherever upstream returns at all - which the tests check by
+   replaying upstream's own growth and a real `networkx.eulerian_circuit` on
+   the same draws and comparing the tours node for node.
+3. **`Graph2Vec`, `DeepWalk`, `Node2Vec` and `Walklets` share a PRNG, not a
+   stream.** Upstream draws walks from the `random` module
+   (`random.sample`) and from `np.random.choice`; the port uses its own
+   MT19937, seeded from whichever global stream upstream's own draw would have
+   come from, so `fit` is reproducible for a given `seed` but the walks
+   themselves differ. The tests compare what does not depend on the draws: the
+   walk count and lengths exactly, the visit counts as a z-score against
+   upstream's own multinomial standard error, with both samples' variance in
+   it (worst observed 3.67 over the 34- and 200-node fixtures, threshold 5,
+   which is where a max over several hundred standard normals stops being
+   noise), and the edge-validity of every step.
+4. **`natural_log` is within one ulp of `math.log`, not equal to it, and
+   `natural_exp` carries about one ulp of its argument into the result.**
+   `std.math.log` in this toolchain is SLEEF u10 and is only good to about
+   1e-10 relative, which is enough to move a histogram bin, so `mathfn.mojo`
+   carries a range-reduced `atanh` series. Measured over 2020 arguments it
+   lands one ulp from `math.log` on 45 of them, always on the low side.
+   `natural_exp` reduces with `x - k*ln2`, which cancels two operands of size
+   `|x|`, so it is good to 2e-14 at `x = -200` and 8e-14 at `x = -700` rather
+   than to the 1e-16 its Taylor series would give on its own. NetLSD's heat
+   trace is evaluated over exactly that range, which is four orders below the
+   SLEEF bound this module exists to beat.
+   `NodeSketch` feeds `-log` of a uniform draw into an argmin, so its parity
+   is asserted against real upstream output rather than against this bound -
+   and it matches exactly.
+5. **The WL extractor takes base labels as bytes, not as Python strings.** A
+   label cannot cross the C ABI as a string, so `WeisfeilerLehmanHashing`
+   takes the `[str(v)]`-ed base features as one `uint8` buffer plus an offset
+   table and returns raw digest words for the caller to hexlify. Everything
+   downstream of that - the recursion, the `sorted()`, the `"_".join`, the
+   MD5, the erasure, the node-major flattening - is upstream's, and the digests
+   are byte-identical to `hashlib`'s. This is the only place a Python object
+   is replaced by a buffer.
+6. **`erase_base_features` changes the read stride.** The kernel compacts each
+   node's run by one slot, so the Python layer reads the erased stride rather
+   than dropping element 0 from the list it built. Same output as upstream's
+   `del extracted_features[k][0]`.
+7. **`Graph2Vec` calls `model.docvecs`,** which gensim 4.4 deprecates in favour
+   of `model.dv`. Upstream's line is kept rather than silently updated, so the
+   call emits a `DeprecationWarning` on a modern gensim.
+
+## Parity testing
+
+`tests/vectors/upstream.npz` is a dump of real karateclub 1.3.3 output,
+produced by `tools/dump_upstream.py` inside the `upstream` environment:
+`pixi run vectors` regenerates it. The test suite compares against that dump,
+so the assertions are against upstream and not against a reference this
+repository wrote. The fixtures in `python/mojokarateclub/_datasets.py` are
+built from edge lists rather than networkx generators, because the two
+environments resolve networkx 2.6 and 3.7 and a generator's RNG schedule
+changed between them.
+
+`176 passed` at the time of writing:
+
+| test file | what it pins |
+| --- | --- |
+| `test_linalg.py` | the 28 low-level wrappers against numpy, scipy and hand-written references, and the C ABI: every `@export` in `capi.mojo` has a signature, so a kernel cannot be called through a default ctypes conversion |
+| `test_graph_embedding.py` | `LDP`, `FGSD`, `SF`, `NetLSD`, `LaplacianEigenmaps`, the WL extractor and `Graph2Vec` against the upstream dump; node ordering, edge weighting and the parameter guards that stand between an estimator and a kernel |
+| `test_node_embedding.py` | `NodeSketch` and both `LINE` orders against the dump, exactly; the walkers against upstream's walk counts and lengths and a z-score on the visit distribution; the diffuser against upstream's own growth driven on the same draws and a real `networkx.eulerian_circuit`, tour for tour; MD5 against `hashlib`; the MT19937 stream against `numpy.random.RandomState` |
+
+The exact-parity results worth naming: `LDP` and `NodeSketch` match the
+upstream arrays with `array_equal`; `FGSD`, `SF` and `LaplacianEigenmaps` agree
+to better than 1e-9; `NetLSD` to better than 1e-5, and the residual there is
+ARPACK's, not the port's - upstream moves by the same 3.7e-07 from the exact
+float64 heat kernel trace, and the port sits 7.8e-16 from it; both `LINE`
+orders to better than 1e-12.
+
+`EulerianDiffuser` is the one model whose parity test does not need a dump,
+because upstream's algorithm can be replayed in full: the reference in
+`tests/test_node_embedding.py` is `_run_diffusion_process` transcribed, with
+the draws taken from this port's own MT19937 - so both sides consume the
+generator word for word - and a real `nx.DiGraph` and
+`networkx.eulerian_circuit` doing the subgraph and the tour. Over 4 fixtures
+and 4 covers the kernel's tours equal networkx's exactly. That pins the growth,
+the insertion order the tour depends on, and the search itself, and it holds
+for a cover above the component size, where upstream never returns at all.
 
 ## Benchmarks
 
-Measured on this machine, Linux x86-64, Intel Xeon E5-2697 v4 at 2.30 GHz,
-CPython 3.13, numpy 2.5.1, scipy 1.18.1, networkx 3.7. Best of N with the
-repeat count auto-calibrated to run each side for at least 50 ms; the machine
-is shared, so best-of rather than mean, because the only samples a scheduler
-preempts are the slow ones.
+`pixi run bench` measures this port and real karateclub 1.3.3 on identical
+graphs, in the two environments, and prints a markdown table. The pixi task
+takes a machine-wide `flock` so a concurrent run cannot distort the numbers,
+which is why the benchmark must be started through `pixi run bench` and not by
+hand.
 
-| kernel | mojo (ms) | upstream (ms) | speedup |
-| --- | ---: | ---: | ---: |
-| `fill` n=1048576 | 3.4159 | 0.6033 | 0.18x |
-| `copy` n=1048576 | 1.4857 | 0.7018 | 0.47x |
-| `axpy` n=1048576 | 1.3081 | 4.0715 | 3.11x |
-| `scale` n=1048576 | 0.9892 | 1.6365 | 1.65x |
-| `dot` n=4194304 | 55.1252 | 100.1120 | 1.82x |
-| `total` n=4194304 | 9.4476 | 3.9614 | 0.42x |
-| `frobenius` n=4194304 | 6.2205 | 62.2451 | 10.01x |
-| `gemm` 512x512x512 | 96.2684 | 191.9964 | 1.99x |
-| `gemm_nt` 512x512x512 | 2145.6151 | 157.9518 | 0.07x |
-| `matvec` 4096x4096 | 19.5527 | 56.1737 | 2.87x |
-| `eigh` d=256 | 2053.4533 | 5746.9212 | 2.80x |
-| `invert` d=160 | 20.7372 | 2521.4603 | 121.59x |
-| `linspace` n=1048576 | 2.2642 | 9.1202 | 4.03x |
-| `l1_normalize_rows` 8192x128 | 4.8709 | 6.4113 | 1.32x |
-| `histogram` n=4194304 | 21.0931 | 269.1357 | 12.76x |
-| `dense_to_coo` 256x256 | 0.2376 | 0.8795 | 3.70x |
-| `clustering` n=400 | 0.7617 | 81.2230 | 106.63x |
-| `eccentricity` n=400 | 34.0171 | 243.2691 | 7.15x |
-| `csr_matvec` n=20000 | 3.1168 | 1.2673 | 0.41x |
-| `csr_scatter` n=20000 | 2591.8973 | 2525.3226 | 0.97x |
-| `csr_matmul` n=20000x64 | 83.1912 | 366.8103 | 4.41x |
-| `csr_dense` n=4000 | 290.8413 | 244.0308 | 0.84x |
-| `csr_row_scale` n=4000 | 0.1740 | 1.5148 | 8.71x |
-| `coo_matmul` nnz=399748x64 | 110.9889 | 52.9322 | 0.48x |
-| `coo_matmul_t` nnz=399748x64 | 55.8941 | 144.9037 | 2.59x |
-| `coo_scatter` nnz=79880 | 105.8278 | 120.9691 | 1.14x |
+Machine: Intel(R) Xeon(R) CPU E5-2697 v4 @ 2.30GHz, 72 logical CPUs, shared with other jobs. Upstream side:
+Python 3.9.23, numpy 1.22.4, networkx 2.6.3, scipy 1.9.3. Port side: Python
+3.13.15, Mojo 1.2.0.dev2026092605. The table is one `pixi run bench`
+invocation, at 2026-09-26T22:08:49Z.
 
-Geometric mean across all 26 cases: **2.26x**. Reproduce with
-`pixi run bench`, which holds a machine-wide lock.
+| case | workload | karateclub 1.3.3 | mojo-karateclub | speedup |
+| --- | --- | --- | --- | --- |
+| LDP on karate | `LDP(bins=32)`, fit + `get_embedding` | 2.732 ms | 0.203 ms | 13.43x |
+| LDP on ws300 | `LDP(bins=32)`, fit + `get_embedding` | 0.0180 s | 1.238 ms | 14.52x |
+| FGSD on karate | `FGSD()`, fit + `get_embedding` | 2.130 ms | 0.868 ms | 2.45x |
+| FGSD on ws300 | `FGSD()`, fit + `get_embedding` | 0.4224 s | 1.4913 s | 0.28x (slower) |
+| SF on karate | `SF(dimensions=16)`, fit + `get_embedding` | 5.500 ms | 0.910 ms | 6.04x |
+| SF on ws300 | `SF(dimensions=32)`, fit + `get_embedding` | 0.4268 s | 1.4517 s | 0.29x (slower) |
+| NetLSD on karate | `NetLSD(scale_steps=32, approximations=8)` | 9.164 ms | 0.987 ms | 9.28x |
+| NetLSD on ws300 | `NetLSD(scale_steps=32, approximations=16)` | 0.2465 s | 1.4536 s | 0.17x (slower) |
+| LaplacianEigenmaps on karate | `LaplacianEigenmaps(dimensions=8)` | 9.200 ms | 1.363 ms | 6.75x |
+| LaplacianEigenmaps on ws300 | `LaplacianEigenmaps(dimensions=8)` | 0.0238 s | 1.4575 s | 0.02x (slower) |
+| NodeSketch on karate | `NodeSketch(dimensions=16)` | 0.0167 s | 0.434 ms | 38.56x |
+| NodeSketch on ws300 | `NodeSketch(dimensions=16)` | 0.2257 s | 3.092 ms | 72.99x |
+| FirstOrderLINE on karate | `FirstOrderLINE(dimensions=8, epochs=5)` | 0.996 ms | 0.167 ms | 5.95x |
+| FirstOrderLINE on ws300 | `FirstOrderLINE(dimensions=8, epochs=5)` | 0.0160 s | 1.798 ms | 8.91x |
+| SecondOrderLINE on karate | `SecondOrderLINE(dimensions=8, epochs=5)` | 1.064 ms | 0.182 ms | 5.84x |
+| SecondOrderLINE on ws300 | `SecondOrderLINE(dimensions=8, epochs=5)` | 0.0159 s | 1.675 ms | 9.51x |
+| WeisfeilerLehmanHashing on ws300 | `wl_iterations=3`, `get_graph_features` | 5.569 ms | 5.788 ms | 0.96x (slower) |
+| RandomWalker on ws300 | `walk_length=40, walk_number=10` | 0.4183 s | 0.0472 s | 8.86x |
+| BiasedRandomWalker on ws300 | `walk_length=40, walk_number=10, p=0.5, q=2.0` | 24.7254 s | 0.0542 s | 455.99x |
 
-These numbers are real but they were taken on a busy machine, and it shows.
-The host's load average was around 430 against 72 cores while this ran, from
-unrelated concurrent jobs, so several rows are pessimistic and the run-to-run
-variance is large. A second `pixi run bench` of the same code on the same
-machine gave a 2.87x geometric mean, with `gemm_nt` at 0.31x rather than
-0.07x and `csr_dense` at 3.05x rather than 0.84x. Treat the ordering and the
-order of magnitude as meaningful and any individual sub-1.0x row as
-provisional; re-run the benchmark on an idle machine before quoting a figure.
+Geomean over the 19 cases: **4.35x**. This box is shared, and the upstream
+`ws300` column moves by a factor of four between runs - `FGSD` on `ws300`
+measured 0.0997 s, then 0.4224 s on consecutive runs, and `SF` on `ws300` 0.1016 s
+then 0.4268 s, because the ARPACK side is sensitive to whatever else the machine
+is doing. The port's own column is stable to about 5% across those runs. Read
+the direction of each row, not its third digit; the `ws300` spectral rows are
+slower in every run, and their exact ratio is not.
 
-The pattern is the expected one for hand-written Mojo against a mature
-native stack, and it is worth stating plainly rather than hiding:
+Five cases are slower, and the pattern is not a mystery. The four `ws300`
+spectral rows are the dense-Jacobi-versus-ARPACK trade: upstream asks ARPACK
+for the eight or sixteen eigenvalues it wants out of a sparse matrix and gets
+them in 24 to 430 ms, while the port diagonalises all 300x300 and then
+selects - about 1.4 s either way, and the gap is the whole cost of the dense
+sweep. `LaplacianEigenmaps` is the worst at 0.02x because the requested `k` is
+tiny (8) against a large `n`, which is exactly the regime ARPACK exists for.
+The fifth is `WeisfeilerLehmanHashing` at 0.96x, where the work is one MD5 per
+node per iteration and the port's MD5 is competitive but the surrounding
+recursion is not; upstream's `hashlib` is backed by OpenSSL's assembly.
 
-- The port wins where the upstream call is interpreted Python looping over
-  networkx objects (`clustering` 107x, `eccentricity` 7x), where the Mojo
-  code avoids an allocation or a temporary (`invert` 122x, `dense_to_coo` 3.7x,
-  `histogram` 12.8x), and on the sparse products (`csr_matmul` 4.4x), where
-  scipy's general machinery is more than a CSR triple needs.
-- The port loses where the upstream side is multithreaded BLAS. `gemm_nt` is
-  the clearest case: the hand-written strided inner loop is single threaded,
-  while `b @ b.T` goes to a threaded BLAS. `copy`, `csr_matvec` and `coo_matmul`
-  are memory-bandwidth-bound streaming loops where numpy's and scipy's
-  already-tuned, already-parallel code is at parity or better, and a serial
-  Mojo loop cannot win there.
-- The Mojo kernels are single-threaded because this toolchain has no
-  `parallelize` (see `MOJO_NOTES.md`, section 4). That is the whole reason for
-  the rows below 1.0x.
+The wins are where upstream spends its time in Python-level loops.
+`BiasedRandomWalker` is 456x because upstream rebuilds a numpy array and calls
+`np.piecewise` and `np.random.choice` at every one of 120000 steps, and
+`NodeSketch` is 39-73x because upstream counts with `Counter` objects in a
+double Python loop. `LDP` is 13-15x for the same reason one level up: upstream
+builds its feature block out of a Python list comprehension per node.
 
-## License
+## How it works
 
-MIT, Lee Penkman. See `LICENSE`.
+**One compilation unit.** `build/build.sh` runs `mojo build --emit shared-lib`
+on `src/mojokarateclub/capi.mojo` and writes `dist/libmojo-karateclub.so`. Mojo's
+build cost is essentially fixed per unit, so all the kernels live in one
+translation unit with `capi.mojo` re-exporting them; `-I src/mojokarateclub`
+is what lets the sibling files resolve as bare module names. Editing a kernel
+means re-running `pixi run build`, and `tests/test_linalg.py` has a test that
+every declared symbol really is in the library, so a stale `.so` fails loudly
+rather than mysteriously.
+
+**FFI.** `@export` refuses parametric functions and an `abi("C")` function may
+not be parametric, so a Mojo pointer cannot cross the boundary: every buffer
+goes as an `Int` address and is rebuilt with
+`Pointer[T, AnyOrigin[mut=True]](unsafe_from_address=addr)` inside the wrapper.
+`Int` is 64-bit, so ctypes argtypes are `c_int64` throughout; leaving one off
+lets ctypes pick a 32-bit conversion and truncate an address into a wild
+pointer. Flags cross as `Int` 0/1 rather than `Bool`, matching the kernel
+signatures; a `Bool` parameter was checked and works across the boundary in
+this toolchain, so the choice is for symmetry with the `Int`-typed kernels
+rather than a workaround.
+
+**Memory layout.** Nothing in Mojo allocates. Every kernel writes into
+caller-owned buffers and takes its scratch as explicit trailing arguments, and
+the Python layer allocates it with numpy, sized from the estimator's own
+parameters. There is no arena and nothing to leak; the cost is that
+`_calculate_sf` reads as a list of buffer arguments, which is why each module
+documents what each one is.
+
+Graphs cross as CSR: `indptr: int32[n+1]`, `indices: int32[nnz]`, and
+`values: float64[nnz]`. Both directions of every undirected edge are present
+and each row is in ascending column order, which is what the kernels assume;
+`python/mojokarateclub/estimator.py` builds that from a networkx graph, walks
+the nodes in label order rather than networkx's insertion order (so row `i`
+is node `i`, as upstream's `nodelist=range(n)`), and applies the self-loop
+pass. The spectral estimators always read the `weight` attribute, defaulting
+to `1.0` per edge, because that is what upstream's
+`nx.normalized_laplacian_matrix` does; `LDP` and the walkers follow upstream's
+own `nx.is_weighted` dispatch instead. Dense matrices are row-major `float64`.
+The MD5 digest is four `uint32` words, little-endian, which is what
+`hashlib.hexdigest()` prints when you hexlify them in that order.
+
+**Threading.** There is none. `parallelize` does not exist in this toolchain
+(see `MOJO_NOTES.md`, section 4), and the GPU host API is absent too (section
+5), so this is single-threaded CPU code throughout. That is also the honest
+reason the dense spectral paths lose to LAPACK's multithreaded BLAS on the
+same matrices.
+
+**Numerics.** Two toolchain facts shape the arithmetic. `std.math.log` and
+`std.math.exp` are SLEEF u10, good to about 1e-10 relative, so `mathfn.mojo`
+carries its own. And `stack_allocation` is not safe for kernel scratch: the
+buffer is silently clobbered when the allocating function is inlined into a
+caller that also has a stack frame, which is why nothing here uses it.
+`MOJO_NOTES.md` has the rest, all of it verified by compiling rather than by
+reading the docs.
+
+## Layout
+
+```
+src/mojokarateclub/   Mojo kernels, one file per upstream module
+  kclinalg.mojo       dense, CSR and COO primitives
+  spectral.mojo       normalized adjacency and Laplacian, pseudo-inverse, eigenvalue selection
+  mathfn.mojo         full-precision log and exp
+  hashing.mojo        RFC 1321 MD5
+  ldp.mojo fgsd.mojo sf.mojo netlsd.mojo          graph_embedding
+  laplacianeigenmaps.mojo nodesketch.mojo line.mojo walker.mojo treefeatures.mojo
+  diffuser.mojo       EulerianDiffuser, the growth and the Hierholzer tour
+  capi.mojo           the C ABI, the single compilation unit
+build/build.sh        mojo build --emit shared-lib
+python/mojokarateclub/
+  _ffi.py             library handle, signatures, buffer rules
+  linalg.py           the low-level wrappers
+  estimator.py        upstream's Estimator, plus the CSR conversion
+  graph_embedding.py  LDP, FGSD, SF, NetLSD, Graph2Vec
+  node_embedding.py   DeepWalk, Diff2Vec, Node2Vec, Walklets, NodeSketch,
+                      FirstOrderLINE, SecondOrderLINE, LaplacianEigenmaps
+  utils.py            RandomWalker, BiasedRandomWalker, EulerianDiffuser,
+                      WeisfeilerLehmanHashing
+  _datasets.py        the fixture graphs
+tests/                pytest, against tests/vectors/upstream.npz
+tools/dump_upstream.py  regenerates those vectors in the upstream environment
+bench/                bench.py (port), bench_upstream.py (upstream),
+                      bench_eig.py (the dense sweep alone), run.sh
+```
+
+## Licence
+
+MIT, Lee Penkman. See `LICENSE`. karateclub is GPLv3 and is not vendored here;
+it is a separate package in a separate environment, used as the reference.

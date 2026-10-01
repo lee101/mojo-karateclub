@@ -14,6 +14,8 @@ comptime W = 4
 comptime Ptr = Pointer[Float64, AnyOrigin[mut=True]]
 comptime IPtr = Pointer[Int32, AnyOrigin[mut=True]]
 
+comptime TRANSPOSE_TILE = 64
+
 
 def at(a: IPtr, i: Int) -> Int:
     """Index read out of an Int32 buffer; Mojo will not widen implicitly."""
@@ -136,7 +138,87 @@ def matvec(a: Ptr, x: Ptr, dst: Ptr, rows: Int, cols: Int):
 
 
 
-def jacobi_eigh(a: Ptr, vectors: Ptr, d: Int, sweeps: Int, tol: Float64) -> Int:
+def jacobi_span(
+    a: Ptr,
+    d: Int,
+    p: Int,
+    q: Int,
+    row_ap: Ptr,
+    row_aq: Ptr,
+    row_vp: Ptr,
+    row_vq: Ptr,
+    lo: Int,
+    hi: Int,
+    c: Float64,
+    s: Float64,
+):
+    """One Jacobi rotation over the `k` in `[lo, hi)` of the pair `(p, q)`.
+
+    A rotation `J` acts as `A <- J.T A J` and `V <- V J`. Both leave the
+    columns and rows `p` and `q` the only ones that change, and because `A` is
+    symmetric `A[p, k]` already is `A[k, p]`: one pass can read the pair out
+    of the columns and write both orientations, which is what halves the
+    loads against the unfused sweep's separate column and row passes.
+
+    The eigenvector block is held transposed (`vt[p, k]` is `V[k, p]`), so its
+    two streams are contiguous rows and vectorise; the matrix's two column
+    streams are a stride `d` apart and stay scalar.
+    """
+    var vc = SIMD[DType.float64, W](c)
+    var vs = SIMD[DType.float64, W](s)
+    var i = lo
+    while i + W <= hi:
+        var m = row_vp.unsafe_load[width=W](i)
+        var w = row_vq.unsafe_load[width=W](i)
+        row_vp.unsafe_store(i, vc * m - vs * w)
+        row_vq.unsafe_store(i, vs * m + vc * w)
+        for lane in range(W):
+            var k = i + lane
+            var x = a.unsafe_load(k * d + p)
+            var y = a.unsafe_load(k * d + q)
+            var u = c * x - s * y
+            var v = s * x + c * y
+            a.unsafe_offset(k * d + p)[] = u
+            a.unsafe_offset(k * d + q)[] = v
+            row_ap.unsafe_offset(k)[] = u
+            row_aq.unsafe_offset(k)[] = v
+        i += W
+    while i < hi:
+        var x = a.unsafe_load(i * d + p)
+        var y = a.unsafe_load(i * d + q)
+        var u = c * x - s * y
+        var v = s * x + c * y
+        a.unsafe_offset(i * d + p)[] = u
+        a.unsafe_offset(i * d + q)[] = v
+        row_ap.unsafe_offset(i)[] = u
+        row_aq.unsafe_offset(i)[] = v
+        var m = row_vp.unsafe_load(i)
+        var w = row_vq.unsafe_load(i)
+        row_vp.unsafe_offset(i)[] = c * m - s * w
+        row_vq.unsafe_offset(i)[] = s * m + c * w
+        i += 1
+
+
+def transpose(src: Ptr, dst: Ptr, d: Int):
+    """`dst[i, j] = src[j, i]` for a square `d x d`, in `TRANSPOSE_TILE`
+    squares so neither side leaves L1 mid-tile."""
+    var jb = 0
+    while jb < d:
+        var jend = min(jb + TRANSPOSE_TILE, d)
+        var ib = 0
+        while ib < d:
+            var iend = min(ib + TRANSPOSE_TILE, d)
+            for j in range(jb, jend):
+                var row = src.unsafe_offset(j * d)
+                for i in range(ib, iend):
+                    dst.unsafe_offset(i * d + j)[] = row.unsafe_load(i)
+            ib += TRANSPOSE_TILE
+        jb += TRANSPOSE_TILE
+
+
+def jacobi_eigh(
+    a: Ptr, vectors: Ptr, vt: Ptr, d: Int, sweeps: Int, tol: Float64
+) -> Int:
     """Diagonalise a symmetric `a[d, d]` in place; eigenvectors land in the
     columns of `vectors`. Returns the number of sweeps actually used.
 
@@ -145,45 +227,106 @@ def jacobi_eigh(a: Ptr, vectors: Ptr, d: Int, sweeps: Int, tol: Float64) -> Int:
     basis-invariant combinations here (`U @ diag(f) @ U.T`, and the spectrum
     itself), so the sweep order is free; anything that needs a specific sign
     has to pin it, as `mojo-sklearn`'s PCA does.
+
+    `vt` is a `d x d` scratch holding the eigenvector block transposed, which
+    is the only orientation a rotation can update with contiguous writes. It
+    is transposed back into `vectors` before returning, so the caller still
+    reads eigenvectors in the columns.
     """
     for i in range(d):
         for j in range(d):
-            vectors.unsafe_offset(i * d + j)[] = 1.0 if i == j else 0.0
+            vt.unsafe_offset(i * d + j)[] = 1.0 if i == j else 0.0
     for sweep in range(sweeps):
         var off = 0.0
         for i in range(d):
             for j in range(i + 1, d):
                 off += a.unsafe_load(i * d + j) * a.unsafe_load(i * d + j)
         if off <= tol:
+            transpose(vt, vectors, d)
             return sweep
         for p in range(d):
+            var row_ap = a.unsafe_offset(p * d)
+            var row_vp = vt.unsafe_offset(p * d)
             for q in range(p + 1, d):
-                var apq = a.unsafe_load(p * d + q)
+                var apq = row_ap.unsafe_load(q)
                 if apq == 0.0:
                     continue
-                var theta = (a.unsafe_load(q * d + q) - a.unsafe_load(p * d + p)) / (
-                    2.0 * apq
-                )
+                var row_aq = a.unsafe_offset(q * d)
+                var row_vq = vt.unsafe_offset(q * d)
+                var app = row_ap.unsafe_load(p)
+                var aqq = row_aq.unsafe_load(q)
+                var theta = (aqq - app) / (2.0 * apq)
                 var sign = 1.0 if theta >= 0.0 else -1.0
                 var t = sign / (abs(theta) + sqrt(theta * theta + 1.0))
                 var c = 1.0 / sqrt(t * t + 1.0)
                 var s = t * c
-                for k in range(d):
-                    var akp = a.unsafe_load(k * d + p)
-                    var akq = a.unsafe_load(k * d + q)
-                    a.unsafe_offset(k * d + p)[] = c * akp - s * akq
-                    a.unsafe_offset(k * d + q)[] = s * akp + c * akq
-                for k in range(d):
-                    var apk = a.unsafe_load(p * d + k)
-                    var aqk = a.unsafe_load(q * d + k)
-                    a.unsafe_offset(p * d + k)[] = c * apk - s * aqk
-                    a.unsafe_offset(q * d + k)[] = s * apk + c * aqk
-                for k in range(d):
-                    var vkp = vectors.unsafe_load(k * d + p)
-                    var vkq = vectors.unsafe_load(k * d + q)
-                    vectors.unsafe_offset(k * d + p)[] = c * vkp - s * vkq
-                    vectors.unsafe_offset(k * d + q)[] = s * vkp + c * vkq
+                jacobi_span(a, d, p, q, row_ap, row_aq, row_vp, row_vq, 0, p, c, s)
+                jacobi_span(a, d, p, q, row_ap, row_aq, row_vp, row_vq, p + 1, q, c, s)
+                jacobi_span(a, d, p, q, row_ap, row_aq, row_vp, row_vq, q + 1, d, c, s)
+                # The 2 x 2 corner the three spans skip, in the order the
+                # unfused sweep used: its column pass rewrote `p` and `q`
+                # before its row pass read them back.
+                var t1 = c * app - s * apq
+                var t2 = s * app + c * apq
+                var t3 = c * apq - s * aqq
+                var t4 = s * apq + c * aqq
+                row_ap.unsafe_offset(p)[] = c * t1 - s * t3
+                row_aq.unsafe_offset(p)[] = s * t1 + c * t3
+                row_ap.unsafe_offset(q)[] = c * t2 - s * t4
+                row_aq.unsafe_offset(q)[] = s * t2 + c * t4
+                var m = row_vp.unsafe_load(p)
+                var w = row_vq.unsafe_load(p)
+                row_vp.unsafe_offset(p)[] = c * m - s * w
+                row_vq.unsafe_offset(p)[] = s * m + c * w
+                m = row_vp.unsafe_load(q)
+                w = row_vq.unsafe_load(q)
+                row_vp.unsafe_offset(q)[] = c * m - s * w
+                row_vq.unsafe_offset(q)[] = s * m + c * w
+    transpose(vt, vectors, d)
     return sweeps
+
+
+
+def pinv_spectrum(
+    vectors: Ptr,
+    values: Ptr,
+    dst: Ptr,
+    work: Ptr,
+    inv: Ptr,
+    d: Int,
+    cut: Float64,
+):
+    """`U @ diag(1 / s) @ U.T` for a symmetric `U` with eigenvalues `s`.
+
+    `values` is a `d x d` block whose diagonal holds the eigenvalues and
+    whose rest is read never; `work` is a `d x d` scratch and `inv` is `d`
+    doubles. The masked reciprocal is built once and applied to whole rows, so
+    the `O(d^3)` reconstruction is a run of contiguous dot products rather
+    than `d^2` passes each dividing by `s[k]` on every element. The result is
+    symmetric, so only the upper triangle is accumulated and then mirrored.
+    """
+    for k in range(d):
+        var s = values.unsafe_load(k * d + k)
+        inv.unsafe_offset(k)[] = 0.0 if abs(s) <= cut else 1.0 / s
+    for r in range(d):
+        var src = vectors.unsafe_offset(r * d)
+        var scaled = work.unsafe_offset(r * d)
+        var k = 0
+        while k + W <= d:
+            scaled.unsafe_store(
+                k, src.unsafe_load[width=W](k) * inv.unsafe_load[width=W](k)
+            )
+            k += W
+        while k < d:
+            scaled.unsafe_offset(k)[] = src.unsafe_load(k) * inv.unsafe_load(k)
+            k += 1
+    for r in range(d):
+        var row = work.unsafe_offset(r * d)
+        var out = dst.unsafe_offset(r * d)
+        for c in range(r, d):
+            var total = dot(row, vectors.unsafe_offset(c * d), d)
+            out.unsafe_offset(c)[] = total
+            dst.unsafe_offset(c * d + r)[] = total
 
 
 def dense_to_coo(a: Ptr, n: Int, rows: IPtr, cols: IPtr, values: Ptr) -> Int:
@@ -295,6 +438,10 @@ def histogram(x: Ptr, dst: Ptr, n: Int, bins: Int, lo: Float64, hi: Float64):
     (`lo == hi`) is widened by half a unit each way first, as numpy does,
     rather than left to divide by zero.
     """
+    if bins < 1:
+        # `numpy.histogram` raises here; the kernel has nowhere to report it, so
+        # it writes nothing rather than clamping a bin index to -1.
+        return
     for b in range(bins):
         dst.unsafe_offset(b)[] = 0.0
     var low = lo

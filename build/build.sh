@@ -6,7 +6,7 @@
 set -euo pipefail
 
 root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-out="$root/dist/libmojokarateclub.so"
+out="$root/dist/libmojo-karateclub.so"
 
 # `pixi run` sets MODULAR_HOME; a bare `mojo` invocation does not, and without
 # it every import fails with "unable to locate module 'std'" (MOJO_NOTES.md 0).

@@ -8,10 +8,17 @@ version = "0.1.0"
 [tasks]
 build = "bash build/build.sh"
 test = "python -m pytest tests -q"
-bench = "flock /tmp/mojo-bench.lock python bench/bench.py"
+vectors = "pixi run -e upstream python tools/dump_upstream.py"
+# The flock keeps a concurrent factory job from distorting the timings, which is
+# why the benchmark must be started through this task and not by hand.
+bench = "flock /tmp/mojo-bench.lock bash bench/run.sh"
 
 [activation.env]
 PYTHONPATH = "python"
+
+[environments]
+default = { features = [] }
+upstream = { no-default-feature = true, features = ["upstream"] }
 
 [dependencies]
 mojo = "==1.2.0.dev2026092605"
@@ -20,3 +27,20 @@ pytest = "*"
 numpy = "*"
 scipy = ">=1.18.1,<2"
 networkx = ">=3.7,<4"
+# gensim trains the skip-gram side of DeepWalk, Node2Vec, Walklets and Graph2Vec.
+# Upstream calls it too, so it is a runtime dependency here rather than a
+# kernel; the ported part is the walk generation and the WL feature extraction.
+gensim = "*"
+
+# Upstream karateclub 1.3.3 pins numpy<1.23, networkx<2.7 and pandas<=1.3.5, none
+# of which build on the 3.13 interpreter the Mojo kernels build against, so the
+# reference implementation lives in a second environment with its own resolver.
+[feature.upstream.dependencies]
+python = "3.9.*"
+# networkx 2.6 calls `scipy.errstate`, which scipy removed in 1.12, and gensim
+# 4 needs scipy below 1.11 anyway; numpy stays on the 1.22 that karateclub pins.
+scipy = ">=1.5,<1.10"
+numpy = ">=1.19,<1.23"
+
+[feature.upstream.pypi-dependencies]
+karateclub = "==1.3.3"

@@ -1,268 +1,345 @@
-"""Benchmark the Mojo kernels against the libraries upstream karateclub calls.
+"""Time this port against the real karateclub, and print the comparison table.
 
-karateclub itself has no arithmetic: it delegates to numpy for dense work,
-scipy.sparse for the adjacency algebra, networkx for the graph metrics, and
-LAPACK (through numpy) for the eigendecompositions. Those calls are therefore
-the parity bar for this port, and every row below pairs one Mojo kernel with
-the upstream call a caller would otherwise have made.
+Runs in the default pixi environment - the one with the Mojo toolchain, numpy
+2 and the package on `PYTHONPATH` - against numbers `bench/bench_upstream.py`
+measured in the `upstream` environment, which is the only one karateclub 1.3.3
+installs into. The two environments cannot be merged (numpy 1.22 versus 2, and
+the ctypes layer needs the default env's ABI), so they are two processes that
+join on a case key:
 
-Elementwise rows compare kernel against kernel: the numpy side writes through
-`out=` or a plain assignment so neither side is charged for an allocation the
-other does not make. Products and factorisations allocate on both sides,
-because there the output buffer is part of the work.
+    pixi run bench        # bench/run.sh, which runs both halves
 
-Timing: best of `repeats`, with the repeat count auto-calibrated so each side
-runs for at least `TARGET` seconds. Best-of rather than mean, because the
-machine is shared and the only samples a scheduler preempts are the slow ones;
-a preempted sample should not be charged to the kernel. Rows marked
-single-shot are baselines too slow to repeat at all.
+Each case constructs the model, fits it and reads the embedding, on the same
+fixture graph and with the same parameters as the upstream half. The graph is
+built once per case, outside the timed callable, and reused across
+repetitions: `Estimator._check_graph` adds one self loop per node on the first
+fit, and the fits after it re-add edges networkx already holds in O(1) each, so
+best-of-N drops that one O(n) pass. The three non-estimator cases (the walkers
+and the WL extractor) do not touch the graph at all. The upstream half builds
+and reuses its graphs the same way, so the two columns are timed alike.
 
-Run it through `pixi run bench`, which holds a machine-wide flock.
+Timing is best-of-N rather than mean: this machine is shared, the only samples
+a scheduler preempts are the slow ones, and a preempted sample should not be
+charged to the library. N is 7 for a case that measures under a millisecond and
+3 otherwise.
+
+The spectral rows are expected to lose. Upstream reaches multithreaded
+LAPACK/ARPACK through scipy; this port runs a serial dense Jacobi sweep, so
+there the honest row is the one where the ratio is below 1.0, and it is
+printed as it stands.
 """
-
+import importlib.util
+import json
+import os
+import pathlib
 import platform
 import statistics
+import subprocess
+import sys
 import time
+import traceback
 
-import networkx as nx
-import numpy as np
-import scipy
-import scipy.sparse as sp
+ROOT = pathlib.Path(__file__).resolve().parents[1]
+UPSTREAM = ROOT / "dist" / "upstream_timings.json"
+GRAPHS = ROOT / "tests" / "_graphs.py"
 
-import mojokarateclub as mk
-
-TARGET = 0.05
-MAX_REPEATS = 200
-WARMUP = 2
-
-# Each entry: (group, label, mojo call, upstream call, repeat both).
-# The callables take no arguments and close over their inputs through default
-# arguments, so building the next case cannot rebind an earlier one.
-CASES = []
+FAST_REPEATS = 7
+SLOW_REPEATS = 3
+FAST_THRESHOLD = 1e-3
 
 
-def timed(fn, repeat):
-    """Best-of-N wall time in seconds; `repeat` False means a single call."""
-    for _ in range(WARMUP if repeat else 1):
-        fn()
-    if not repeat:
+def load_fixture_module():
+    """`tests/_graphs.py` by path rather than through the package, so this file
+    and `bench/bench_upstream.py` build byte-identical graphs."""
+    spec = importlib.util.spec_from_file_location("kc_fixtures", GRAPHS)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def resolve(name):
+    """The port's class, wherever the package re-exports it.
+
+    A symbol the package does not export yet is a per-case failure, not a
+    reason to drop the case or to abort the table.
+    """
+    problems = []
+    for module_name in ("mojokarateclub", "mojokarateclub.node_embedding",
+                        "mojokarateclub.utils"):
+        try:
+            module = importlib.import_module(module_name)
+        except ImportError as exc:
+            problems.append(f"{module_name}: {exc}")
+            continue
+        klass = getattr(module, name, None)
+        if klass is not None:
+            return klass
+    raise ImportError(f"mojokarateclub exports no {name}\n  " + "\n  ".join(problems))
+
+
+def timed(fn):
+    """`(best-of-N seconds, N)` for one call, with the probe call as warmup."""
+    start = time.perf_counter()
+    fn()
+    best = time.perf_counter() - start
+    repeats = FAST_REPEATS if best < FAST_THRESHOLD else SLOW_REPEATS
+    for _ in range(repeats - 1):
         start = time.perf_counter()
         fn()
-        return time.perf_counter() - start
-    count = 1
-    while True:
-        start = time.perf_counter()
-        for _ in range(count):
-            fn()
-        elapsed = (time.perf_counter() - start) / count
-        if elapsed * count >= TARGET or count >= MAX_REPEATS:
-            return elapsed
-        count = min(count * 4, MAX_REPEATS)
+        best = min(best, time.perf_counter() - start)
+    return best, repeats
 
 
-def rand(n, rng):
-    return np.ascontiguousarray(rng.normal(size=n))
+def estimator(name, kwargs, graphs):
+    """Build a callable that constructs, fits and reads, as three statements.
+
+    `graphs` selects the two fit signatures: the graph-level models take a list
+    of graphs, the node-level ones the bare graph.
+    """
+
+    def build():
+        klass = resolve(name)
+
+        def call(graph):
+            model = klass(**kwargs)
+            model.fit([graph] if graphs else graph)
+            embedding = model.get_embedding()
+            return embedding
+
+        return call
+
+    return build
 
 
-def dense_csr(a):
-    """Row-major CSR `(indptr, indices, values)` of a dense square block."""
-    rows, cols = np.nonzero(a)
-    indptr = np.zeros(a.shape[0] + 1, dtype=np.int32)
-    np.cumsum(np.bincount(rows, minlength=a.shape[0]), out=indptr[1:])
-    return indptr, cols.astype(np.int32), np.ascontiguousarray(a[rows, cols])
+def obj(name, construct, read):
+    """Build a callable for a case that is one object, not an estimator: the
+    walkers and the WL feature extractor, which have no `fit`."""
 
+    def build():
+        klass = resolve(name)
 
-def to_coo(a):
-    rows, cols = np.nonzero(a)
-    return (
-        rows.astype(np.int32),
-        cols.astype(np.int32),
-        np.ascontiguousarray(a[rows, cols]),
-    )
+        def call(graph):
+            instance = construct(klass, graph)
+            return read(instance, graph)
 
+        return call
 
-def random_graph(n, avg_degree, rng):
-    """Symmetric zero-diagonal 0/1 dense block; the shape karateclub embeds."""
-    a = (rng.random((n, n)) < avg_degree / n).astype(np.float64)
-    np.fill_diagonal(a, 0.0)
-    return np.maximum(a, a.T)
-
-
-def sparse(n, avg_degree, rng):
-    """`(dense, scipy csr, mojo csr triple)` for one undirected graph."""
-    a = random_graph(n, avg_degree, rng)
-    indptr, indices, values = dense_csr(a)
-    return a, sp.csr_matrix((values, indices, indptr), shape=(n, n)), (
-        indptr,
-        indices,
-        values,
-    )
-
-
-def add(group, label, mojo, upstream, repeat=True):
-    CASES.append((group, label, mojo, upstream, repeat))
+    return build
 
 
 def build_cases():
-    rng = np.random.default_rng(20260926)
+    """`(key, workload, fixture, callable-builder)` in table order.
 
-    # ---------------------------------------------------------- elementwise
-    n = 1 << 20
-    x, y = rand(n, rng), rand(n, rng)
-    add("elementwise", f"fill  n={n}", lambda y=y: mk.fill(y, 0.5),
-        lambda y=y: y.fill(0.5))
-    add("elementwise", f"copy  n={n}", lambda x=x, y=y: mk.copy(x, y),
-        lambda x=x, y=y: np.copyto(y, x))
-    add("elementwise", f"axpy  n={n}", lambda x=x, y=y: mk.axpy(0.5, x, y),
-        lambda x=x, y=y: np.add(y, 0.5 * x, out=y))
-    add("elementwise", f"scale n={n}", lambda y=y: mk.scale(y, 0.5),
-        lambda y=y: np.multiply(y, 0.5, out=y))
-
-    # ---------------------------------------------------------- reductions
-    n = 1 << 22
-    x, y = rand(n, rng), rand(n, rng)
-    add("reduction", f"dot  n={n}", lambda x=x, y=y: mk.dot(x, y),
-        lambda x=x, y=y: float(np.dot(x, y)))
-    add("reduction", f"sum  n={n}", lambda x=x: mk.total(x),
-        lambda x=x: float(x.sum()))
-    add("reduction", f"norm n={n}", lambda x=x: mk.frobenius(x),
-        lambda x=x: float(np.linalg.norm(x)))
-
-    # ---------------------------------------------------------- products
-    m = k = p = 512
-    a = rand(m * k, rng).reshape(m, k)
-    b = rand(k * p, rng).reshape(k, p)
-    add("product", f"gemm   {m}x{k}x{p}", lambda a=a, b=b: mk.gemm(a, b),
-        lambda a=a, b=b: a @ b)
-    add("product", f"gemm.T {m}x{k}x{p}", lambda a=a, b=b: mk.gemm_nt(a, b),
-        lambda a=a, b=b: a @ b.T)
-    rows = cols = 4096
-    a = rand(rows * cols, rng).reshape(rows, cols)
-    v = rand(cols, rng)
-    add("product", f"matvec {rows}x{cols}", lambda a=a, v=v: mk.matvec(a, v),
-        lambda a=a, v=v: a @ v)
-
-    # ------------------------------------------------------ factorisations
-    d = 256
-    s = rand(d * d, rng).reshape(d, d)
-    sym = np.ascontiguousarray((s + s.T) / 2)
-    add("factor", f"eigh  d={d}", lambda a=sym: mk.eigh(a, sweeps=60),
-        lambda a=sym: np.linalg.eigh(a), repeat=False)
-    d = 160
-    s = np.ascontiguousarray(rand(d * d, rng).reshape(d, d) * 0.1 + d * np.eye(d))
-    add("factor", f"inv   d={d}", lambda a=s: mk.invert(a),
-        lambda a=s: np.linalg.inv(a), repeat=False)
-
-    # ---------------------------------------------------------- utilities
-    n = 1 << 20
-    add("util", f"linspace n={n}", lambda n=n: mk.linspace(0.0, 1.0, n),
-        lambda n=n: np.linspace(0.0, 1.0, n))
-    rows, cols = 8192, 128
-    block = rand(rows * cols, rng).reshape(rows, cols)
-    block[::7] = 0.0
-    add("util", f"l1 rows {rows}x{cols}", lambda b=block: mk.l1_normalize_rows(b),
-        lambda b=block: _l1_numpy(b))
-    n = 1 << 22
-    samples = rand(n, rng)
-    add("util", f"hist  n={n}", lambda s=samples: mk.histogram(s, 256, -4.0, 4.0),
-        lambda s=samples: np.histogram(s, bins=256, range=(-4.0, 4.0))[0])
-    d = 256
-    pattern = (rng.random((d, d)) < 0.05) * rand(d * d, rng).reshape(d, d)
-    add("util", f"dense_to_coo {d}x{d}", lambda a=pattern: mk.dense_to_coo(a),
-        lambda a=pattern: to_coo(a))
-
-    # -------------------------------------------------------- graph metrics
-    n = 400
-    _, _, (indptr, indices, _) = sparse(n, 12, rng)
-    graph = nx.from_scipy_sparse_array(
-        sp.csr_matrix((np.ones(indices.size), indices, indptr), shape=(n, n))
-    )
-    add("graph", f"clustering n={n}",
-        lambda p=indptr, i=indices: mk.clustering(p, i),
-        lambda g=graph: _nx_clustering(g), repeat=False)
-    add("graph", f"eccentricity n={n}",
-        lambda p=indptr, i=indices: mk.eccentricity(p, i),
-        lambda g=graph: nx.eccentricity(g), repeat=False)
-
-    # ------------------------------------------------------------------ CSR
-    n = 20000
-    _, mat, (indptr, indices, values) = sparse(n, 10, rng)
-    v = rand(n, rng)
-    add("csr", f"csr_matvec n={n}",
-        lambda p=indptr, i=indices, w=values, v=v: mk.csr_matvec(p, i, w, v),
-        lambda m=mat, v=v: m @ v)
-    add("csr", f"csr_scatter n={n}",
-        lambda p=indptr, i=indices, w=values: mk.csr_scatter(p, i, w),
-        lambda m=mat: m.toarray())
-    width = 64
-    block = rand(n * width, rng).reshape(n, width)
-    add("csr", f"csr_matmul n={n}x{width}",
-        lambda p=indptr, i=indices, w=values, b=block: mk.csr_matmul(p, i, w, b),
-        lambda m=mat, b=block: m @ b)
-    n = 4000
-    _, mat, (indptr, indices, values) = sparse(n, 10, rng)
-    add("csr", f"csr_dense n={n}",
-        lambda p=indptr, i=indices, w=values: mk.csr_dense(p, i, w),
-        lambda m=mat: (m @ m).toarray(), repeat=False)
-    scale = rand(n, rng)
-    add("csr", f"csr_row_scale n={n}",
-        lambda w=values, s=scale, p=indptr: mk.csr_row_scale(w, s, p),
-        lambda m=mat, s=scale: sp.diags(s) @ m, repeat=False)
-
-    # ------------------------------------------------------------------ COO
-    n = 20000
-    rows_a, cols_a, values_a = to_coo(random_graph(n, 10, rng))
-    width = 64
-    block = rand(n * width, rng).reshape(n, width)
-    coo = sp.coo_matrix((values_a, (rows_a, cols_a)), shape=(n, n))
-    add("coo", f"coo_matmul nnz={values_a.size}x{width}",
-        lambda r=rows_a, c=cols_a, w=values_a, b=block: mk.coo_matmul(r, c, w, b),
-        lambda a=coo, b=block: a @ b)
-    add("coo", f"coo_matmul_T nnz={values_a.size}x{width}",
-        lambda r=rows_a, c=cols_a, w=values_a, b=block: mk.coo_matmul_t(r, c, w, b),
-        lambda a=coo, b=block: a.T @ b)
-    n = 4000
-    rows_a, cols_a, values_a = to_coo(random_graph(n, 10, rng))
-    coo = sp.coo_matrix((values_a, (rows_a, cols_a)), shape=(n, n))
-    add("coo", f"coo_scatter nnz={values_a.size}",
-        lambda r=rows_a, c=cols_a, w=values_a: mk.coo_scatter(r, c, w),
-        lambda a=coo: a.toarray())
+    The keys and the parameters are the ones `bench/bench_upstream.py` times,
+    so the join in `read_upstream()` finds every row.
+    """
+    graph_level = "fit([graph]) + get_embedding()"
+    node_level = "fit(graph) + get_embedding()"
+    line = ("dimensions=8, epochs=5, mini_batch_size=64, verbose=False")
+    return [
+        ("LDP/karate", f"LDP(bins=32), {graph_level}", "karate",
+         estimator("LDP", {"bins": 32}, True)),
+        ("LDP/ws300", f"LDP(bins=32), {graph_level}", "ws300",
+         estimator("LDP", {"bins": 32}, True)),
+        ("FGSD/karate", f"FGSD(), {graph_level}", "karate",
+         estimator("FGSD", {}, True)),
+        ("FGSD/ws300", f"FGSD(), {graph_level}", "ws300",
+         estimator("FGSD", {}, True)),
+        ("SF/karate", f"SF(dimensions=16), {graph_level}", "karate",
+         estimator("SF", {"dimensions": 16}, True)),
+        ("SF/ws300", f"SF(dimensions=32), {graph_level}", "ws300",
+         estimator("SF", {"dimensions": 32}, True)),
+        ("NetLSD/karate",
+         f"NetLSD(scale_steps=32, approximations=8), {graph_level}", "karate",
+         estimator("NetLSD", {"scale_steps": 32, "approximations": 8}, True)),
+        ("NetLSD/ws300",
+         f"NetLSD(scale_steps=32, approximations=16), {graph_level}", "ws300",
+         estimator("NetLSD", {"scale_steps": 32, "approximations": 16}, True)),
+        ("LaplacianEigenmaps/karate",
+         f"LaplacianEigenmaps(dimensions=8), {node_level}", "karate",
+         estimator("LaplacianEigenmaps", {"dimensions": 8}, False)),
+        ("LaplacianEigenmaps/ws300",
+         f"LaplacianEigenmaps(dimensions=8), {node_level}", "ws300",
+         estimator("LaplacianEigenmaps", {"dimensions": 8}, False)),
+        ("NodeSketch/karate", f"NodeSketch(dimensions=16), {node_level}", "karate",
+         estimator("NodeSketch", {"dimensions": 16}, False)),
+        ("NodeSketch/ws300", f"NodeSketch(dimensions=16), {node_level}", "ws300",
+         estimator("NodeSketch", {"dimensions": 16}, False)),
+        ("FirstOrderLINE/karate", f"FirstOrderLINE({line}), {node_level}", "karate",
+         estimator("FirstOrderLINE",
+                   {"dimensions": 8, "epochs": 5, "mini_batch_size": 64,
+                    "verbose": False}, False)),
+        ("FirstOrderLINE/ws300", f"FirstOrderLINE({line}), {node_level}", "ws300",
+         estimator("FirstOrderLINE",
+                   {"dimensions": 8, "epochs": 5, "mini_batch_size": 64,
+                    "verbose": False}, False)),
+        ("SecondOrderLINE/karate", f"SecondOrderLINE({line}), {node_level}",
+         "karate",
+         estimator("SecondOrderLINE",
+                   {"dimensions": 8, "epochs": 5, "mini_batch_size": 64,
+                    "verbose": False}, False)),
+        ("SecondOrderLINE/ws300", f"SecondOrderLINE({line}), {node_level}",
+         "ws300",
+         estimator("SecondOrderLINE",
+                   {"dimensions": 8, "epochs": 5, "mini_batch_size": 64,
+                    "verbose": False}, False)),
+        ("WeisfeilerLehmanHashing/ws300",
+         "WeisfeilerLehmanHashing(graph, wl_iterations=3, attributed=False, "
+         "erase_base_features=False).get_graph_features()", "ws300",
+         obj("WeisfeilerLehmanHashing", lambda k, g: k(g, 3, False, False),
+             lambda instance, _g: instance.get_graph_features())),
+        ("RandomWalker/ws300",
+         "RandomWalker(walk_length=40, walk_number=10).do_walks(graph)", "ws300",
+         obj("RandomWalker", lambda k, _g: k(40, 10),
+             lambda instance, g: instance.do_walks(g))),
+        ("BiasedRandomWalker/ws300",
+         "BiasedRandomWalker(walk_length=40, walk_number=10, p=0.5, q=2.0)"
+         ".do_walks(graph)", "ws300",
+         obj("BiasedRandomWalker", lambda k, _g: k(40, 10, 0.5, 2.0),
+             lambda instance, g: instance.do_walks(g))),
+        ("EulerianDiffuser/karate",
+         "EulerianDiffuser(diffusion_number=10, diffusion_cover=80)"
+         ".do_diffusions(graph)", "karate",
+         obj("EulerianDiffuser", lambda k, _g: k(10, 80),
+             lambda instance, g: instance.do_diffusions(g))),
+    ]
 
 
-def _l1_numpy(block):
-    totals = np.abs(block).sum(axis=1, keepdims=True)
-    totals[totals == 0.0] = 1.0
-    return block / totals
+def read_upstream():
+    """`(timings, repeats, environment)` from the upstream half's JSON.
+
+    `bench/run.sh` exports `BENCH_UPSTREAM=failed` when the upstream step did
+    not finish, and a JSON left over from an earlier run is not evidence for
+    this one, so it is ignored rather than printed as if it were current. A
+    missing file, a truncated one or one that is not a timings file mean the
+    same thing, and the table prints without a left-hand column instead of
+    dying.
+    """
+    if os.environ.get("BENCH_UPSTREAM") == "failed":
+        print(f"note: the upstream step failed in this run, so {UPSTREAM} is "
+              f"from an earlier run and is not used", file=sys.stderr)
+        return {}, {}, {}
+    try:
+        payload = json.loads(UPSTREAM.read_text())
+    except FileNotFoundError:
+        print(f"note: {UPSTREAM} does not exist; the upstream step did not run",
+              file=sys.stderr)
+        return {}, {}, {}
+    except (OSError, ValueError) as exc:
+        print(f"note: {UPSTREAM} is unreadable ({exc}); no upstream column",
+              file=sys.stderr)
+        return {}, {}, {}
+    if not isinstance(payload, dict) or "timings" not in payload:
+        print(f"note: {UPSTREAM} is not a timings file written by "
+              f"bench_upstream.py; no upstream column", file=sys.stderr)
+        return {}, {}, {}
+    return (payload["timings"], payload.get("repeats", {}),
+            dict(payload.get("environment", {}),
+                 measured=payload.get("measured", "unknown")))
 
 
-def _nx_clustering(g):
-    return np.array([nx.clustering(g, v) for v in g], dtype=np.float64)
+def cpu_model():
+    try:
+        for line in pathlib.Path("/proc/cpuinfo").read_text().splitlines():
+            if line.startswith("model name"):
+                return line.split(":", 1)[1].strip()
+    except OSError:
+        pass
+    return platform.processor() or platform.machine()
+
+
+def mojo_version():
+    try:
+        out = subprocess.run(["mojo", "--version"], capture_output=True,
+                             text=True, timeout=60)
+    except (OSError, subprocess.SubprocessError):
+        return "unknown"
+    return out.stdout.strip() or out.stderr.strip() or "unknown"
+
+
+def seconds(value):
+    """Seconds for the table: microsecond-scale cases keep four decimals."""
+    if value < 1e-2:
+        return f"{value * 1e3:.3f} ms"
+    return f"{value:.4f} s"
 
 
 def main():
-    build_cases()
-    print(f"{platform.python_implementation()} {platform.machine()}   "
-          f"numpy {np.__version__}  scipy {scipy.__version__}  "
-          f"networkx {nx.__version__}")
-    print(f"cases: {len(CASES)}   (best-of, target {TARGET}s per side)\n")
-    header = f"{'kernel':<30}{'mojo (ms)':>12}{'upstream (ms)':>16}{'speedup':>10}"
-    print(header)
-    print("-" * len(header))
+    fixtures = load_fixture_module()
+    upstream, upstream_repeats, upstream_env = read_upstream()
+    cases = build_cases()
     rows = []
-    for group, label, mojo, upstream, repeat in CASES:
-        mojo_s, up_s = timed(mojo, repeat), timed(upstream, repeat)
-        if rows and rows[-1][0] != group:
-            print()
-        rows.append((group, label, mojo_s, up_s))
-        print(f"{label:<30}{mojo_s * 1e3:>12.4f}{up_s * 1e3:>16.4f}"
-              f"{up_s / mojo_s:>9.2f}x", flush=True)
+    failures = []
+    for key, workload, fixture, build in cases:
+        try:
+            call = build()
+            graph, _ = fixtures.build_graph(fixture)
+            port_s, port_n = timed(lambda call=call, graph=graph: call(graph))
+        except Exception:
+            failures.append((key, traceback.format_exc()))
+            rows.append((key, workload, upstream.get(key), None,
+                         upstream_repeats.get(key), None))
+            print(f"  {key:<32} FAILED", flush=True)
+            continue
+        rows.append((key, workload, upstream.get(key), port_s,
+                     upstream_repeats.get(key), port_n))
+        print(f"  {key:<32} {seconds(port_s):>12} (best of {port_n})", flush=True)
+
+    missing = [key for key, _w, _f, _b in cases if key not in upstream]
+    if missing:
+        print(f"\nnote: no upstream timing for {', '.join(missing)}; the upstream "
+              f"half did not finish those cases", file=sys.stderr)
+
     print()
-    print("geomean speedup vs upstream: "
-          f"{statistics.geometric_mean([u / m for _, _, m, u in rows]):.2f}x")
-    print("worst rows (speedup, kernel):")
-    for ratio, label in sorted((u / m, lab) for _, lab, m, u in rows)[:8]:
-        print(f"  {ratio:>7.2f}x  {label}")
+    print(f"machine: {cpu_model()} | {os.cpu_count()} cores | "
+          f"{mojo_version()} | "
+          f"karateclub {upstream_env.get('karateclub', 'unavailable')} "
+          f"(upstream env: Python {upstream_env.get('python', '?')}, "
+          f"numpy {upstream_env.get('numpy', '?')}, "
+          f"networkx {upstream_env.get('networkx', '?')}, "
+          f"scipy {upstream_env.get('scipy', '?')}, measured "
+          f"{upstream_env.get('measured', '?')}) | "
+          f"this port: Python {platform.python_version()} "
+          f"({sys.implementation.name})")
+    print()
+    print("| case | workload | karateclub 1.3.3 | mojo-karateclub | "
+          "best-of (up/port) | speedup |")
+    print("| --- | --- | --- | --- | --- | --- |")
+    ratios = []
+    for key, workload, up_s, port_s, up_n, port_n in rows:
+        name, _, graph_name = key.partition("/")
+        if up_s is None or port_s is None:
+            up_cell = "n/a" if up_s is None else seconds(up_s)
+            port_cell = "failed" if port_s is None else seconds(port_s)
+            ratio_cell = "n/a"
+        else:
+            ratio = up_s / port_s
+            ratios.append(ratio)
+            up_cell, port_cell = seconds(up_s), seconds(port_s)
+            ratio_cell = f"{ratio:.2f}x" + (" (slower)" if ratio < 1.0 else "")
+        counts = f"{up_n if up_n is not None else '-'} / " \
+                 f"{port_n if port_n is not None else '-'}"
+        print(f"| {name} on {graph_name} | {workload} | {up_cell} | {port_cell} | "
+              f"{counts} | {ratio_cell} |")
+
+    print()
+    if ratios:
+        print(f"geomean speedup over the {len(ratios)} case(s) that ran on both "
+              f"sides: {statistics.geometric_mean(ratios):.2f}x")
+    else:
+        print("no case ran on both sides, so there is no geomean")
+    slower = sorted((up_s / port_s, key) for key, _w, up_s, port_s, _u, _p in rows
+                    if up_s is not None and port_s is not None and up_s < port_s)
+    if slower:
+        print("slower than upstream: " + ", ".join(
+            f"{key} ({ratio:.2f}x)" for ratio, key in slower))
+    for key, tb in failures:
+        print(f"\nmojo-karateclub {key} raised:\n{tb}", file=sys.stderr)
+    if failures:
+        print(f"\n{len(failures)} case(s) raised; the rows above are what ran.",
+              file=sys.stderr)
+    return 1 if failures else 0
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())

@@ -6,11 +6,15 @@ written from the algorithm. The references are deliberately naive; they exist to
 be obviously correct, not fast.
 """
 
+import re
+from pathlib import Path
 
 import numpy as np
 import pytest
 
 import mojokarateclub as mk
+from mojokarateclub import _ffi
+from mojokarateclub._ffi import _csr_rows, _data, _lib
 
 
 def adjacencies(indptr, indices):
@@ -182,7 +186,7 @@ def test_gemm_rejects_inner_dimension_mismatch(rng):
 # ------------------------------------------------------------------ eigen
 
 
-@pytest.mark.parametrize("d", [1, 2, 5, 9])
+@pytest.mark.parametrize("d", [1, 2, 5, 7, 8, 9, 13, 17])
 def test_eigh_matches_lapack(d, rng):
     a = rng.normal(size=(d, d))
     a = np.ascontiguousarray(a + a.T)
@@ -206,6 +210,50 @@ def test_eigh_reports_non_convergence(rng):
     a = a + a.T
     with pytest.raises(RuntimeError):
         mk.eigh(a, sweeps=1, tol=0.0)
+
+
+@pytest.mark.parametrize("d", [1, 4, 8, 13])
+def test_jacobi_diagonalises_exactly_once_per_entry(d, rng):
+    """The sweep writes both orientations of every rotated entry.
+
+    `d` straddles the SIMD width and the width of the `q` group the sweep
+    walks in, so a vectorised body with a scalar tail and a short last group
+    both have to land on the same answer as the plain quadratic form. The two
+    orientations of the `2 x 2` corner come out of different expressions and
+    so agree only to rounding, which is what the off-diagonal budget hides.
+    """
+    a = rng.normal(size=(d, d))
+    symmetric = np.ascontiguousarray(a + a.T)
+    work = symmetric.copy()
+    vectors = np.zeros((d, d))
+    vt = np.zeros((d, d))
+    used = _lib.kc_jacobi_eigh(
+        _data(work), _data(vectors), _data(vt), d, 100, 1e-24
+    )
+    assert used < 100
+    assert np.allclose(work, work.T, atol=1e-12)
+    assert np.allclose(work - np.diag(np.diag(work)), 0.0, atol=1e-12)
+    assert np.allclose(np.sort(np.diag(work)), np.linalg.eigvalsh(symmetric), atol=1e-9)
+    assert np.allclose(vectors.T @ vectors, np.eye(d), atol=1e-10)
+    assert np.allclose(
+        symmetric @ vectors, vectors * np.diag(work), atol=1e-9
+    )
+
+
+@pytest.mark.parametrize("d", [3, 8, 12])
+def test_symmetric_pinv_matches_numpy(d, rng):
+    """`kc_symmetric_pinv` is the masked `U diag(1/s) U.T` reconstruction."""
+    a = rng.normal(size=(d, d))
+    a = np.ascontiguousarray(a + a.T) + d * np.eye(d)
+    out = np.array(a, order="C", copy=True).reshape(-1)
+    tmp = np.zeros(d * d)
+    vectors = np.zeros(d * d)
+    vt = np.zeros(d * d)
+    assert _lib.kc_symmetric_pinv(
+        _data(out), _data(tmp), _data(vectors), _data(vt), d, 1e-15, 100, 1e-24
+    )
+    assert np.allclose(out.reshape(d, d), np.linalg.pinv(a), atol=1e-8)
+
 
 
 # ------------------------------------------------------------------ inverse
@@ -498,6 +546,42 @@ def test_csr_row_scale_rejects_an_indptr_that_overshoots_values():
         mk.csr_row_scale(np.ones(2), np.ones(2), indptr)
 
 
+def test_csr_row_scale_rejects_a_negative_indptr_entry():
+    # The kernel walks each row's span unclamped, so this would write before
+    # the start of `values`.
+    indptr = np.array([0, -1, 2], dtype=np.int32)
+    with pytest.raises(ValueError, match="non-decreasing"):
+        mk.csr_row_scale(np.ones(2), np.ones(2), indptr)
+
+
+def test_csr_row_scale_rejects_an_indptr_that_does_not_start_at_zero():
+    indptr = np.array([1, 2], dtype=np.int32)
+    with pytest.raises(ValueError, match="start at 0"):
+        mk.csr_row_scale(np.ones(2), np.ones(1), indptr)
+
+
+def test_matvec_kernels_reject_a_non_vector_rhs():
+    # A 2-D `x` would be flat-indexed as a longer vector and silently summed
+    # across columns.
+    indptr = np.array([0, 1, 2], dtype=np.int32)
+    indices = np.array([0, 1], dtype=np.int32)
+    with pytest.raises(ValueError, match="1-D"):
+        mk.csr_matvec(indptr, indices, np.ones(2), np.ones((2, 3)))
+
+
+def test_matmul_kernels_reject_a_non_matrix_rhs():
+    indptr = np.array([0, 1, 2], dtype=np.int32)
+    indices = np.array([0, 1], dtype=np.int32)
+    with pytest.raises(ValueError, match="2-D"):
+        mk.csr_matmul(indptr, indices, np.ones(2), np.ones(2))
+    rows = np.array([0, 1], dtype=np.int32)
+    cols = np.array([1, 0], dtype=np.int32)
+    with pytest.raises(ValueError, match="2-D"):
+        mk.coo_matmul(rows, cols, np.ones(2), np.ones(2))
+    with pytest.raises(ValueError, match="2-D"):
+        mk.coo_matmul_t(rows, cols, np.ones(2), np.ones(2))
+
+
 def test_csr_dense_rejects_a_column_beyond_the_row_count():
     indptr = np.array([0, 1, 2], dtype=np.int32)
     indices = np.array([0, 9], dtype=np.int32)
@@ -571,7 +655,7 @@ def test_missing_library_names_the_build_task(monkeypatch, tmp_path):
 
 
 def test_library_path_defaults_into_dist():
-    assert mk.library_path().name == "libmojokarateclub.so"
+    assert mk.library_path().name == "libmojo-karateclub.so"
     assert mk.library_path().parent.name == "dist"
 
 
@@ -580,6 +664,14 @@ def test_every_declared_symbol_exists_in_the_library():
     for name in mk._SIGNATURES:
         assert hasattr(lib, name)
 
+
+def test_every_export_has_a_signature():
+    # A kernel added to capi.mojo without a `_SIGNATURES` entry would be called
+    # with ctypes' default conversions, which truncate a 64-bit address
+    # instead of raising. The two lists have to be the same set.
+    capi = Path(_ffi._ROOT) / "src" / "mojokarateclub" / "capi.mojo"
+    exports = set(re.findall(r'@export\("(\w+)"\)', capi.read_text()))
+    assert exports == set(mk._SIGNATURES)
 
 def test_no_buffer_argument_is_narrower_than_mojo_int():
     # Mojo `Int` is 64-bit, so a narrower ctypes conversion would silently
