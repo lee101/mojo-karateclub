@@ -138,13 +138,9 @@ def matvec(a: Ptr, x: Ptr, dst: Ptr, rows: Int, cols: Int):
 
 
 
-def jacobi_span(
-    a: Ptr,
-    d: Int,
-    p: Int,
-    q: Int,
-    row_ap: Ptr,
-    row_aq: Ptr,
+def jacobi_rows(
+    row_p: Ptr,
+    row_q: Ptr,
     row_vp: Ptr,
     row_vq: Ptr,
     lo: Int,
@@ -152,50 +148,68 @@ def jacobi_span(
     c: Float64,
     s: Float64,
 ):
-    """One Jacobi rotation over the `k` in `[lo, hi)` of the pair `(p, q)`.
-
-    A rotation `J` acts as `A <- J.T A J` and `V <- V J`. Both leave the
-    columns and rows `p` and `q` the only ones that change, and because `A` is
-    symmetric `A[p, k]` already is `A[k, p]`: one pass can read the pair out
-    of the columns and write both orientations, which is what halves the
-    loads against the unfused sweep's separate column and row passes.
-
-    The eigenvector block is held transposed (`vt[p, k]` is `V[k, p]`), so its
-    two streams are contiguous rows and vectorise; the matrix's two column
-    streams are a stride `d` apart and stay scalar.
+    """One Jacobi rotation over the `k` in `[lo, hi)` of the pair `(p, q)`,
+    for the span where both matrix entries are row elements of the packed
+    layout: `A[k, p]` is `row_p[k]` and `A[k, q]` is `row_q[k]`. All four
+    streams are contiguous, so the whole span vectorises.
     """
     var vc = SIMD[DType.float64, W](c)
     var vs = SIMD[DType.float64, W](s)
     var i = lo
     while i + W <= hi:
-        var m = row_vp.unsafe_load[width=W](i)
-        var w = row_vq.unsafe_load[width=W](i)
-        row_vp.unsafe_store(i, vc * m - vs * w)
-        row_vq.unsafe_store(i, vs * m + vc * w)
-        for lane in range(W):
-            var k = i + lane
-            var x = a.unsafe_load(k * d + p)
-            var y = a.unsafe_load(k * d + q)
-            var u = c * x - s * y
-            var v = s * x + c * y
-            a.unsafe_offset(k * d + p)[] = u
-            a.unsafe_offset(k * d + q)[] = v
-            row_ap.unsafe_offset(k)[] = u
-            row_aq.unsafe_offset(k)[] = v
+        var ap = row_p.unsafe_load[width=W](i)
+        var aq = row_q.unsafe_load[width=W](i)
+        var bp = row_vp.unsafe_load[width=W](i)
+        var bq = row_vq.unsafe_load[width=W](i)
+        row_p.unsafe_store(i, vc * ap - vs * aq)
+        row_q.unsafe_store(i, vs * ap + vc * aq)
+        row_vp.unsafe_store(i, vc * bp - vs * bq)
+        row_vq.unsafe_store(i, vs * bp + vc * bq)
         i += W
     while i < hi:
-        var x = a.unsafe_load(i * d + p)
-        var y = a.unsafe_load(i * d + q)
-        var u = c * x - s * y
-        var v = s * x + c * y
-        a.unsafe_offset(i * d + p)[] = u
-        a.unsafe_offset(i * d + q)[] = v
-        row_ap.unsafe_offset(i)[] = u
-        row_aq.unsafe_offset(i)[] = v
-        var m = row_vp.unsafe_load(i)
-        var w = row_vq.unsafe_load(i)
-        row_vp.unsafe_offset(i)[] = c * m - s * w
-        row_vq.unsafe_offset(i)[] = s * m + c * w
+        var ap = row_p.unsafe_load(i)
+        var aq = row_q.unsafe_load(i)
+        var bp = row_vp.unsafe_load(i)
+        var bq = row_vq.unsafe_load(i)
+        row_p.unsafe_offset(i)[] = c * ap - s * aq
+        row_q.unsafe_offset(i)[] = s * ap + c * aq
+        row_vp.unsafe_offset(i)[] = c * bp - s * bq
+        row_vq.unsafe_offset(i)[] = s * bp + c * bq
+        i += 1
+
+
+def jacobi_pairs(
+    col_p: Ptr,
+    stride_p: Int,
+    col_q: Ptr,
+    stride_q: Int,
+    row_vp: Ptr,
+    row_vq: Ptr,
+    lo: Int,
+    hi: Int,
+    c: Float64,
+    s: Float64,
+):
+    """One Jacobi rotation over the `k` in `[lo, hi)` of the pair `(p, q)`,
+    for the spans where at least one matrix entry is a column element.
+
+    `col_p[i * stride_p]` holds `A[i, p]` and `col_q[i * stride_q]` holds
+    `A[i, q]`: the packed layout puts the first in row `p` when `i < p` and in
+    column `p` when `i > p`, so a column span passes a base and a stride rather
+    than a row. The eigenvector streams stay unit stride, but the matrix ones
+    do not, so this one stays scalar.
+    """
+
+    var i = lo
+    while i < hi:
+        var ap = col_p.unsafe_load(i * stride_p)
+        var aq = col_q.unsafe_load(i * stride_q)
+        var bp = row_vp.unsafe_load(i)
+        var bq = row_vq.unsafe_load(i)
+        col_p.unsafe_offset(i * stride_p)[] = c * ap - s * aq
+        col_q.unsafe_offset(i * stride_q)[] = s * ap + c * aq
+        row_vp.unsafe_offset(i)[] = c * bp - s * bq
+        row_vq.unsafe_offset(i)[] = s * bp + c * bq
         i += 1
 
 
@@ -228,52 +242,61 @@ def jacobi_eigh(
     itself), so the sweep order is free; anything that needs a specific sign
     has to pin it, as `mojo-sklearn`'s PCA does.
 
-    `vt` is a `d x d` scratch holding the eigenvector block transposed, which
-    is the only orientation a rotation can update with contiguous writes. It
-    is transposed back into `vectors` before returning, so the caller still
-    reads eigenvectors in the columns.
+    The sweep runs on the packed upper triangle of `a`: `A[i, j]` lives at
+    `a[min(i, j), max(i, j)]`, so the mirror `A[p, k] = A[k, p]` never has to
+    be written during the sweep - and, more to the point, the span of `k` above
+    `q` becomes two contiguous rows and vectorises, where the unfused sweep
+    read that same span as two strided columns. The lower triangle is filled in
+    once the sweep is done, so `a` is the symmetric matrix again on return.
     """
-    for i in range(d):
-        for j in range(d):
-            vt.unsafe_offset(i * d + j)[] = 1.0 if i == j else 0.0
+    for j in range(d):
+        var row = vt.unsafe_offset(j * d)
+        fill(row, 0.0, j)
+        row.unsafe_offset(j)[] = 1.0
+        fill(row.unsafe_offset(j + 1), 0.0, d - j - 1)
+    var used = sweeps
     for sweep in range(sweeps):
         var off = 0.0
         for i in range(d):
+            var row = a.unsafe_offset(i * d)
             for j in range(i + 1, d):
-                off += a.unsafe_load(i * d + j) * a.unsafe_load(i * d + j)
+                var v = row.unsafe_load(j)
+                off += v * v
         if off <= tol:
-            transpose(vt, vectors, d)
-            return sweep
+            used = sweep
+            break
         for p in range(d):
-            var row_ap = a.unsafe_offset(p * d)
+            var row_p = a.unsafe_offset(p * d)
             var row_vp = vt.unsafe_offset(p * d)
             for q in range(p + 1, d):
-                var apq = row_ap.unsafe_load(q)
+                var apq = row_p.unsafe_load(q)
                 if apq == 0.0:
                     continue
-                var row_aq = a.unsafe_offset(q * d)
+                var row_q = a.unsafe_offset(q * d)
                 var row_vq = vt.unsafe_offset(q * d)
-                var app = row_ap.unsafe_load(p)
-                var aqq = row_aq.unsafe_load(q)
+                var app = row_p.unsafe_load(p)
+                var aqq = row_q.unsafe_load(q)
                 var theta = (aqq - app) / (2.0 * apq)
                 var sign = 1.0 if theta >= 0.0 else -1.0
                 var t = sign / (abs(theta) + sqrt(theta * theta + 1.0))
                 var c = 1.0 / sqrt(t * t + 1.0)
                 var s = t * c
-                jacobi_span(a, d, p, q, row_ap, row_aq, row_vp, row_vq, 0, p, c, s)
-                jacobi_span(a, d, p, q, row_ap, row_aq, row_vp, row_vq, p + 1, q, c, s)
-                jacobi_span(a, d, p, q, row_ap, row_aq, row_vp, row_vq, q + 1, d, c, s)
-                # The 2 x 2 corner the three spans skip, in the order the
-                # unfused sweep used: its column pass rewrote `p` and `q`
-                # before its row pass read them back.
+                jacobi_pairs(
+                    a.unsafe_offset(p), d, a.unsafe_offset(q), d, row_vp, row_vq, 0, p, c, s
+                )
+                jacobi_pairs(
+                    row_p, 1, a.unsafe_offset(q), d, row_vp, row_vq, p + 1, q, c, s
+                )
+                jacobi_rows(row_p, row_q, row_vp, row_vq, q + 1, d, c, s)
+                # The 2 x 2 corner the three spans skip. Only the upper cell is
+                # kept; the sweep reads no lower one until the mirror pass.
                 var t1 = c * app - s * apq
                 var t2 = s * app + c * apq
                 var t3 = c * apq - s * aqq
                 var t4 = s * apq + c * aqq
-                row_ap.unsafe_offset(p)[] = c * t1 - s * t3
-                row_aq.unsafe_offset(p)[] = s * t1 + c * t3
-                row_ap.unsafe_offset(q)[] = c * t2 - s * t4
-                row_aq.unsafe_offset(q)[] = s * t2 + c * t4
+                row_p.unsafe_offset(p)[] = c * t1 - s * t3
+                row_p.unsafe_offset(q)[] = c * t2 - s * t4
+                row_q.unsafe_offset(q)[] = s * t2 + c * t4
                 var m = row_vp.unsafe_load(p)
                 var w = row_vq.unsafe_load(p)
                 row_vp.unsafe_offset(p)[] = c * m - s * w
@@ -282,8 +305,12 @@ def jacobi_eigh(
                 w = row_vq.unsafe_load(q)
                 row_vp.unsafe_offset(q)[] = c * m - s * w
                 row_vq.unsafe_offset(q)[] = s * m + c * w
+    for i in range(d):
+        var row = a.unsafe_offset(i * d)
+        for j in range(i + 1, d):
+            a.unsafe_offset(j * d + i)[] = row.unsafe_load(j)
     transpose(vt, vectors, d)
-    return sweeps
+    return used
 
 
 
