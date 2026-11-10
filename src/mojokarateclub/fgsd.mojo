@@ -30,6 +30,7 @@ def fgsd_similarity(
     rcond: Float64,
     sweeps: Int,
     tol: Float64,
+    workers: Int,
 ) -> Bool:
     """`_calculate_fgsd` up to the histogram: the feature matrix `S` on return.
 
@@ -46,7 +47,7 @@ def fgsd_similarity(
     # fL = np.linalg.pinv(L)
     linalg.copy(laplacian, fL, n * n)
     if not spectral.symmetric_pinv(
-        fL, scratch_a, scratch_b, scratch_c, n, rcond, sweeps, tol
+        fL, scratch_a, scratch_b, scratch_c, n, rcond, sweeps, tol, workers
     ):
         return False
 
@@ -78,6 +79,7 @@ def fgsd_embedding(
     rcond: Float64,
     sweeps: Int,
     tol: Float64,
+    workers: Int,
     hist_bins: Int,
     hist_lo: Float64,
     hist_hi: Float64,
@@ -107,6 +109,7 @@ def fgsd_embedding(
         rcond,
         sweeps,
         tol,
+        workers,
     ):
         return False
     # np.histogram(S.flatten(), bins=self.hist_bins, range=self.hist_range)

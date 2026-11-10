@@ -354,11 +354,44 @@ own `nx.is_weighted` dispatch instead. Dense matrices are row-major `float64`.
 The MD5 digest is four `uint32` words, little-endian, which is what
 `hashlib.hexdigest()` prints when you hexlify them in that order.
 
-**Threading.** There is none. `parallelize` does not exist in this toolchain
-(see `MOJO_NOTES.md`, section 4), and the GPU host API is absent too (section
-5), so this is single-threaded CPU code throughout. That is also the honest
-reason the dense spectral paths lose to LAPACK's multithreaded BLAS on the
-same matrices.
+**Threading.** One loop is split; the rest is single-threaded. `parallelize`
+does exist in this toolchain, but from `max.algorithm`, not `std` - see
+`MOJO_NOTES.md` section 4, and the pinned `max` package in `pixi.toml` without
+which that import does not resolve. Where it is worth using was decided by
+measurement, not by what looked parallel: `bench/analysis.md` has the numbers.
+
+The short version, because it is not a win worth overselling:
+
+- `pinv_spectrum`'s `U diag(1/s) U.T` reconstruction - the `O(d^3)` tail of
+  `FGSD`'s pseudo-inverse - is split across rows, capped at 4 workers
+  (`_ffi.MAX_WORKERS`). Rows touch disjoint cells and each cell is still one
+  `dot` over the same operands, so the output is **bit-identical** to the serial
+  loop; `tests/test_linalg.py::test_serial_and_parallel_pinv_agree` asserts
+  exactly that with `np.array_equal` at d = 8, 699 and 700.
+- It is gated at `PINV_PARALLEL_ROWS = 700` rows. On this host a `parallelize`
+  call costs a flat ~6 ms of thread dispatch whatever the trip count, and the
+  reconstruction only overtakes that near d = 700: it is 4.35 ms at d = 300 and
+  22.58 ms at d = 512. Below the gate the parallel branch was **12-22% slower**
+  at n = 200 on this host, so the gate sits where the measurement puts it.
+- Every graph this port is benchmarked on is 34-300 nodes, so in practice
+  **the parallel branch does not run**. Whole-model `FGSD` is unchanged:
+  0.50 ms on karate, 84.8 ms on a 200-node graph, 348 ms on `ws300`, identical
+  output at 1, 2, 4 and 8 workers. The kernel gains about 1.7x at d = 1024; no
+  caller here reaches that.
+- 1, 2, 4 and 8 workers were each measured. The gain flattens immediately: a
+  1 GB streaming loop is 1.62x at 4 workers and 1.6x at 8, and the reconstruction
+  is 1.02x at 4 workers and 1.07x at 8. Capped at 4 because more does not help.
+
+What is *not* split, and why: `jacobi_eigh` is 99% of `FGSD`, `SF`, `NetLSD` and
+`LaplacianEigenmaps` at n = 300 (424 ms of 434 ms), and a Jacobi sweep is
+sequential - each rotation reads cells the previous one wrote. Running pairs
+concurrently needs a disjoint matching per pass, which changes the rounding, so
+it is out under the same-results rule. The walkers and both LINE models consume
+one MT19937 stream in walk order, so splitting them would change the draws.
+`_do_single_sketch` (3.2 ms) and the WL recursion (5.8 ms) are below the 6 ms
+dispatch floor. That is also still the honest reason the dense spectral paths
+lose to LAPACK's multithreaded BLAS on the same matrices: the port's eigensolver
+is serial, and it is the eigensolver that costs.
 
 **Numerics.** Two toolchain facts shape the arithmetic. `std.math.log` and
 `std.math.exp` are SLEEF u10, good to about 1e-10 relative, so `mathfn.mojo`

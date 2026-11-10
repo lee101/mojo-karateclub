@@ -72,6 +72,13 @@ def load_library() -> ctypes.CDLL:
 
 _lib = load_library()
 
+# Worker count passed to the one kernel that splits its work (`pinv_spectrum`,
+# the `O(d^3)` reconstruction inside FGSD's pseudo-inverse). The host is shared,
+# so this is capped at 4; `bench/analysis.md` has the 1/2/4/8 sweep behind that
+# number. The kernel itself keeps the serial path for a small row count, so this
+# only decides how wide the wide case may go.
+MAX_WORKERS = 4
+
 # Addresses are c_int64 because Mojo Int is 64-bit; leaving an argtype off lets
 # ctypes pick a 32-bit conversion for Python ints and truncates the address.
 _SIGNATURES: dict[str, tuple] = {
@@ -108,11 +115,11 @@ _SIGNATURES: dict[str, tuple] = {
     "kc_ldp_embedding": (None, [_I64] * 5),
     "kc_fgsd_similarity": (
         ctypes.c_bool,
-        [_I64] * 10 + [_F64, _I64, _F64],
+        [_I64] * 10 + [_F64, _I64, _F64, _I64],
     ),
     "kc_fgsd_embedding": (
         ctypes.c_bool,
-        [_I64] * 10 + [_F64, _I64, _F64, _I64, _F64, _F64, _I64],
+        [_I64] * 10 + [_F64, _I64, _F64, _I64, _I64, _F64, _F64, _I64],
     ),
     "kc_sf_calculate": (ctypes.c_bool, [_I64] * 12 + [_I64, _F64]),
     "kc_netlsd_calculate": (
@@ -153,7 +160,7 @@ _SIGNATURES: dict[str, tuple] = {
     "kc_eulerian_diffuser_do_diffusions": (_I64, [_I64] * 17),
     "kc_wl_hash": (None, [_I64] * 14),
     "kc_normalized_adjacency": (None, [_I64] * 5),
-    "kc_symmetric_pinv": (ctypes.c_bool, [_I64] * 5 + [_F64, _I64, _F64]),
+    "kc_symmetric_pinv": (ctypes.c_bool, [_I64] * 5 + [_F64, _I64, _F64, _I64]),
 }
 
 for _name, (_restype, _argtypes) in _SIGNATURES.items():

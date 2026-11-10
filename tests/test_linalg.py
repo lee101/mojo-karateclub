@@ -250,9 +250,48 @@ def test_symmetric_pinv_matches_numpy(d, rng):
     vectors = np.zeros(d * d)
     vt = np.zeros(d * d)
     assert _lib.kc_symmetric_pinv(
-        _data(out), _data(tmp), _data(vectors), _data(vt), d, 1e-15, 100, 1e-24
+        _data(out), _data(tmp), _data(vectors), _data(vt), d, 1e-15, 100, 1e-24,
+        _ffi.MAX_WORKERS,
     )
     assert np.allclose(out.reshape(d, d), np.linalg.pinv(a), atol=1e-8)
+
+
+@pytest.mark.parametrize("d", [8, 699, 700])
+def test_serial_and_parallel_pinv_agree(d, rng):
+    """The `pinv_spectrum` split gives the same answer as the serial loop.
+
+    `d` straddles `PINV_PARALLEL_ROWS` (700): 699 is the last size that runs
+    the serial loop, 700 the first that splits, and 8 is an ordinary small
+    case. The input is the identity rotated by a random orthogonal basis, which
+    is already diagonal to the Jacobi sweep - it converges in zero passes - so
+    the test times the reconstruction it is actually comparing instead of the
+    `O(d^3)` sweep in front of it.
+
+    The comparison is exact (`np.array_equal`) rather than `allclose`: each
+    output cell is still one `dot` over the same operands in the same order, so
+    splitting the rows may not change a bit.
+    """
+    basis, _ = np.linalg.qr(rng.normal(size=(d, d)))
+    a = np.ascontiguousarray(basis @ np.eye(d) @ basis.T)
+
+    def pinv(workers):
+        out = np.array(a, order="C", copy=True).reshape(-1)
+        tmp = np.zeros(d * d)
+        vectors = np.zeros(d * d)
+        vt = np.zeros(d * d)
+        assert _lib.kc_symmetric_pinv(
+            _data(out), _data(tmp), _data(vectors), _data(vt), d, 1e-15, 400,
+            1e-24, workers,
+        )
+        return out
+
+    serial = pinv(1)
+    for workers in (2, _ffi.MAX_WORKERS):
+        assert np.array_equal(serial, pinv(workers)), (
+            f"workers={workers} disagrees with the serial loop at d={d}"
+        )
+
+    assert np.allclose(serial.reshape(d, d), np.linalg.pinv(a), atol=1e-8)
 
 
 

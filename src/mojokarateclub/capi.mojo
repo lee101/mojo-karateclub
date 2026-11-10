@@ -301,6 +301,7 @@ def kc_fgsd_similarity(
     rcond: Float64,
     sweeps: Int,
     tol: Float64,
+    workers: Int,
 ) abi("C") -> Bool:
     return fgsd.fgsd_similarity(
         iptr(indptr),
@@ -316,6 +317,7 @@ def kc_fgsd_similarity(
         rcond,
         sweeps,
         tol,
+        workers,
     )
 
 
@@ -334,6 +336,7 @@ def kc_fgsd_embedding(
     rcond: Float64,
     sweeps: Int,
     tol: Float64,
+    workers: Int,
     hist_bins: Int,
     hist_lo: Float64,
     hist_hi: Float64,
@@ -353,6 +356,7 @@ def kc_fgsd_embedding(
         rcond,
         sweeps,
         tol,
+        workers,
         hist_bins,
         hist_lo,
         hist_hi,
@@ -905,7 +909,8 @@ def kc_symmetric_pinv(
     rcond: Float64,
     sweeps: Int,
     tol: Float64,
+    workers: Int,
 ) abi("C") -> Bool:
     return spectral.symmetric_pinv(
-        fptr(a), fptr(tmp), fptr(vectors), fptr(vt), d, rcond, sweeps, tol
+        fptr(a), fptr(tmp), fptr(vectors), fptr(vt), d, rcond, sweeps, tol, workers
     )

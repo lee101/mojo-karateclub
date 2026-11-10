@@ -8,9 +8,31 @@ Nothing here allocates. Every routine writes into a caller-owned buffer, so
 lifetimes stay the caller's problem.
 """
 
+from max.algorithm import parallelize
 from std.math import sqrt
 
 comptime W = 4
+# Row count below which `pinv_spectrum` stays on the serial loop.
+#
+# `parallelize` costs a fixed ~6 ms of thread dispatch per call on this
+# toolchain, whatever the trip count, and the reconstruction is memory-bound, so
+# it needs to be several times that before splitting it pays. Measured on this
+# host (bench/analysis.md), the reconstruction is 0.02 ms at d = 34, 0.34 ms at
+# d = 128, 4.35 ms at d = 300 and 22.6 ms at d = 512, and the parallel branch
+# first beats the serial loop near d = 700. Set the threshold at the top of what
+# any real caller reaches rather than at the crossover: karateclub's graphs are
+# tens to a few hundred nodes, so the parallel branch is dead code for every
+# graph this port is benchmarked on, and switching it on earlier would have made
+# FGSD 12-22% slower at n = 200.
+#
+# The parallel branch is kept because 700+ node graphs do win (1.5x at d = 768,
+# 1.7x at d = 1024), and the guard is what makes it safe for the callers that
+# stay below it. It is bit-identical to the serial loop: see
+# `test_serial_and_parallel_pinv_agree` in tests/test_linalg.py.
+comptime PINV_PARALLEL_ROWS = 700
+# The host is shared, so the worker count is capped here as well as in the
+# Python layer (`mojokarateclub._ffi.MAX_WORKERS`).
+comptime PINV_MAX_WORKERS = 4
 # Unroll factor of the dense reductions. Four independent accumulators of one
 # SIMD register each: four is the point where the FMA latency of this core is
 # covered without spilling the accumulators, so a fifth buys nothing.
@@ -369,6 +391,7 @@ def pinv_spectrum(
     inv: Ptr,
     d: Int,
     cut: Float64,
+    workers: Int,
 ):
     """`U @ diag(1 / s) @ U.T` for a symmetric `U` with eigenvalues `s`.
 
@@ -378,6 +401,15 @@ def pinv_spectrum(
     the `O(d^3)` reconstruction is a run of contiguous dot products rather
     than `d^2` passes each dividing by `s[k]` on every element. The result is
     symmetric, so only the upper triangle is accumulated and then mirrored.
+
+    The reconstruction is the one part of this that is worth splitting: row `r`
+    reads `work[r, :]` and the whole of `vectors` and writes `dst[r, c]` and
+    `dst[c, r]` for `c >= r`, so the `d` rows touch disjoint cells and can run
+    in any order. Each cell is still one `dot` over the same operands in the
+    same order, so the parallel result is bit-identical to the serial one, not
+    merely close. `workers` is the caller's worker count; below
+    `PINV_PARALLEL_ROWS` rows the dispatch costs more than the split saves and
+    the serial loop runs instead, which is every graph this port benchmarks.
     """
     for k in range(d):
         var s = values.unsafe_load(k * d + k)
@@ -394,13 +426,27 @@ def pinv_spectrum(
         while k < d:
             scaled.unsafe_offset(k)[] = src.unsafe_load(k) * inv.unsafe_load(k)
             k += 1
-    for r in range(d):
+
+    def reconstruct_row(r: Int) {imm}:
         var row = work.unsafe_offset(r * d)
         var out = dst.unsafe_offset(r * d)
         for c in range(r, d):
             var total = dot(row, vectors.unsafe_offset(c * d), d)
             out.unsafe_offset(c)[] = total
             dst.unsafe_offset(c * d + r)[] = total
+
+    var nworkers = workers
+    if nworkers > PINV_MAX_WORKERS:
+        nworkers = PINV_MAX_WORKERS
+    if d < PINV_PARALLEL_ROWS or nworkers < 2:
+        for r in range(d):
+            reconstruct_row(r)
+        return
+
+    def worker(r: Int) {imm}:
+        reconstruct_row(r)
+
+    parallelize(worker, d, nworkers)
 
 
 def dense_to_coo(a: Ptr, n: Int, rows: IPtr, cols: IPtr, values: Ptr) -> Int:

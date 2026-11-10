@@ -14,7 +14,7 @@ contract several of these kernels depend on.
 import networkx as nx
 import numpy as np
 
-from ._ffi import _csr, _data, _index, _lib, _zeros
+from ._ffi import MAX_WORKERS, _csr, _data, _index, _lib, _zeros
 from .estimator import Estimator, csr_from_graph
 
 __all__ = ["LDP", "FGSD", "SF", "NetLSD", "Graph2Vec"]
@@ -192,6 +192,7 @@ class FGSD(Estimator):
             PINV_RCOND,
             EIGEN_SWEEPS,
             EIGEN_TOL,
+            MAX_WORKERS,
             self.hist_bins,
             float(self.hist_range[0]),
             float(self.hist_range[1]),

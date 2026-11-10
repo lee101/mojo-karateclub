@@ -94,6 +94,7 @@ def symmetric_pinv(
     rcond: Float64,
     sweeps: Int,
     tol: Float64,
+    workers: Int,
 ) -> Bool:
     """Moore-Penrose pseudo-inverse of a symmetric `a[d, d]`, written into `a`.
 
@@ -101,6 +102,9 @@ def symmetric_pinv(
     applied to the eigenvalues of the symmetric factorisation, which is the SVD
     for a symmetric argument. `tmp`, `vectors` and `vt` are `d x d` scratch.
     Returns False when the sweep does not converge within `sweeps` passes.
+    `workers` is passed on to `pinv_spectrum`, which is the only stage here with
+    independent iterations; the Jacobi sweep before it is sequential because
+    each rotation has to see the previous one.
     """
     if d == 0:
         return True
@@ -111,7 +115,7 @@ def symmetric_pinv(
     for i in range(d):
         largest = max(largest, abs(tmp.unsafe_load(i * d + i)))
     var cut = rcond * largest
-    linalg.pinv_spectrum(vectors, tmp, a, tmp, vt, d, cut)
+    linalg.pinv_spectrum(vectors, tmp, a, tmp, vt, d, cut, workers)
     return True
 
 
