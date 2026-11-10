@@ -11,6 +11,10 @@ lifetimes stay the caller's problem.
 from std.math import sqrt
 
 comptime W = 4
+# Unroll factor of the dense reductions. Four independent accumulators of one
+# SIMD register each: four is the point where the FMA latency of this core is
+# covered without spilling the accumulators, so a fifth buys nothing.
+comptime DOT_LANES = 4
 comptime Ptr = Pointer[Float64, AnyOrigin[mut=True]]
 comptime IPtr = Pointer[Int32, AnyOrigin[mut=True]]
 
@@ -59,12 +63,32 @@ def scale(x: Ptr, alpha: Float64, n: Int):
 
 
 def dot(a: Ptr, b: Ptr, n: Int) -> Float64:
-    var acc = SIMD[DType.float64, W](0.0)
+    """`a @ b` over `n` contiguous doubles.
+
+    Four vector accumulators, not one: a single accumulator makes every
+    iteration wait on the previous Falcon add, where four independent ones are
+    filled by the FMA pipeline. `DOT_LANES` is the unroll factor, `W` the
+    vector width, so the run is `DOT_LANES * W` long and each accumulator owns
+    one fixed lane group on fixed iterations, which is why the summation order
+    is the same on every call. Combining the four at the end reassociates the
+    sum - the result can differ from a strict left-to-right sum in the last
+    bits, which the callers' tolerances allow and `README.md` notes.
+    """
+    var acc0 = SIMD[DType.float64, W](0.0)
+    var acc1 = SIMD[DType.float64, W](0.0)
+    var acc2 = SIMD[DType.float64, W](0.0)
+    var acc3 = SIMD[DType.float64, W](0.0)
     var i = 0
+    while i + DOT_LANES * W <= n:
+        acc0 += a.unsafe_load[width=W](i) * b.unsafe_load[width=W](i)
+        acc1 += a.unsafe_load[width=W](i + W) * b.unsafe_load[width=W](i + W)
+        acc2 += a.unsafe_load[width=W](i + 2 * W) * b.unsafe_load[width=W](i + 2 * W)
+        acc3 += a.unsafe_load[width=W](i + 3 * W) * b.unsafe_load[width=W](i + 3 * W)
+        i += DOT_LANES * W
     while i + W <= n:
-        acc += a.unsafe_load[width=W](i) * b.unsafe_load[width=W](i)
+        acc0 += a.unsafe_load[width=W](i) * b.unsafe_load[width=W](i)
         i += W
-    var total = acc.reduce_add()
+    var total = ((acc0 + acc1) + (acc2 + acc3)).reduce_add()
     while i < n:
         total += a.unsafe_load(i) * b.unsafe_load(i)
         i += 1
@@ -72,12 +96,22 @@ def dot(a: Ptr, b: Ptr, n: Int) -> Float64:
 
 
 def sumf(a: Ptr, n: Int) -> Float64:
-    var acc = SIMD[DType.float64, W](0.0)
+    """Sum of `n` contiguous doubles, on four accumulators as `dot` is."""
+    var acc0 = SIMD[DType.float64, W](0.0)
+    var acc1 = SIMD[DType.float64, W](0.0)
+    var acc2 = SIMD[DType.float64, W](0.0)
+    var acc3 = SIMD[DType.float64, W](0.0)
     var i = 0
+    while i + DOT_LANES * W <= n:
+        acc0 += a.unsafe_load[width=W](i)
+        acc1 += a.unsafe_load[width=W](i + W)
+        acc2 += a.unsafe_load[width=W](i + 2 * W)
+        acc3 += a.unsafe_load[width=W](i + 3 * W)
+        i += DOT_LANES * W
     while i + W <= n:
-        acc += a.unsafe_load[width=W](i)
+        acc0 += a.unsafe_load[width=W](i)
         i += W
-    var total = acc.reduce_add()
+    var total = ((acc0 + acc1) + (acc2 + acc3)).reduce_add()
     while i < n:
         total += a.unsafe_load(i)
         i += 1
@@ -85,14 +119,27 @@ def sumf(a: Ptr, n: Int) -> Float64:
 
 
 def sum_squares(a: Ptr, n: Int) -> Float64:
-    """`numpy.linalg.norm(x) ** 2` over a dense block."""
-    var acc = SIMD[DType.float64, W](0.0)
+    """`numpy.linalg.norm(x) ** 2` over a dense block, on four accumulators."""
+    var acc0 = SIMD[DType.float64, W](0.0)
+    var acc1 = SIMD[DType.float64, W](0.0)
+    var acc2 = SIMD[DType.float64, W](0.0)
+    var acc3 = SIMD[DType.float64, W](0.0)
     var i = 0
+    while i + DOT_LANES * W <= n:
+        var v0 = a.unsafe_load[width=W](i)
+        var v1 = a.unsafe_load[width=W](i + W)
+        var v2 = a.unsafe_load[width=W](i + 2 * W)
+        var v3 = a.unsafe_load[width=W](i + 3 * W)
+        acc0 += v0 * v0
+        acc1 += v1 * v1
+        acc2 += v2 * v2
+        acc3 += v3 * v3
+        i += DOT_LANES * W
     while i + W <= n:
         var v = a.unsafe_load[width=W](i)
-        acc += v * v
+        acc0 += v * v
         i += W
-    var total = acc.reduce_add()
+    var total = ((acc0 + acc1) + (acc2 + acc3)).reduce_add()
     while i < n:
         var v = a.unsafe_load(i)
         total += v * v
