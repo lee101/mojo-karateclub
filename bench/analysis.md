@@ -144,3 +144,91 @@ Structural counts (nnz, sweeps, buffer bytes) for the flops/bytes columns:
 `pixi run bench`. The worker-count sweeps above were taken by calling
 `kc_symmetric_pinv` / `kc_fgsd_embedding` directly with an explicit `workers`
 argument, which is why both take one.
+
+## 6. GPU phase: one kernel cleared the gate, and it still loses
+
+Host: RTX 5090, 32607 MiB total, 4249-5677 MiB free across 80 samples on
+2026-11-10 (a shared device; it stayed above 4000 MiB free at every sample, so
+the phase went ahead). PCIe enumerated gen 3 x16; pinned copies measured
+12.4 GB/s. `max.gpu.host.DeviceContext` and `max.gpu.block_idx`/`thread_idx`
+both work on this toolchain, and `ctx.name()` reports the 5090.
+
+### The gate: flops per byte, counted
+
+`pixi run python bench/_gpu_gate.py` counts the operations from the kernels'
+own loop structure and the buffers they touch, at the fixture sizes real callers
+pass (sweep counts are the kernels' own return values, not a guess):
+
+| kernel | n = 34 | n = 60 | n = 200 | n = 300 | n = 2000 |
+| --- | --- | --- | --- | --- | --- |
+| `jacobi_eigh` (dense sweep) | 0.19 | 0.19 | 0.19 | 0.19 | 0.19 |
+| `pinv_spectrum` `U D U.T` | 2.83 | 5.00 | 16.67 | 25.00 | 166.67 |
+| WL hashing (MD5 per label) | 1.21 | 0.82 | 0.79 | 0.80 | 1.00 |
+
+- **`jacobi_eigh` is 0.19 flops/byte: CPU only, memory-bound.** It is the
+  whole of `FGSD`, `SF`, `NetLSD` and `LaplacianEigenmaps` - 99% of their run
+  time, per section 2. Each rotation does 12 flops for 16 `float64` accesses,
+  so however `O(n^3)` the rotation count looks, the kernel is a stream. It is
+  also sequential (section 2), so there is no device work to find either.
+- **WL hashing is 0.79-1.21 flops/byte: CPU only, memory-bound.**
+- **`pinv_spectrum` is the only candidate above the line**, and it clears it
+  only at the top of the range callers use: 2.83 at n = 34, 5.00 at 60, 16.67
+  at 200, 25.00 at 300.
+
+### What the device did with it
+
+`bench/_gpu_pinv_model.mojo` is the prototype: one `max.gpu` kernel launch
+mirroring `pinv_spectrum` exactly - one thread per upper-triangle cell, one
+`dot` per cell, the tail handled by a `t < total` guard - with the two inputs
+copied in once and the result copied out once per call. Its output is
+bit-identical to the host reconstruction (`max |gpu - host| = 0.0`) at every
+size below. `bench/_gpu_compare.py` times it against the serial CPU loop in
+alternating passes (best of 3 passes x 5 calls a side), load average 34-41:
+
+| d | CPU serial ms | GPU per call ms | CPU/GPU |
+| --- | --- | --- | --- |
+| 34 | 0.029 | 0.022 | 1.33x |
+| 60 | 0.066 | 0.034 | 1.92x |
+| 200 | 1.553 | 0.152 | 10.24x |
+| 300 | 5.496 | 0.314 | 17.52x |
+
+So the device is 17.5x faster than the *serial* CPU loop at d = 300. The kernel
+alone is 0.13 ms of that 0.314 ms; the copies, one launch and one sync are the
+other 58%.
+
+### Why it was not merged
+
+The device wins against one CPU thread. It does not win against the CPU path
+that exists:
+
+- **The reconstruction is 1.5-3.1% of the call it sits in.** Whole `FGSD` on
+  `ws300` is 374.9 ms (`bench/_gpu_footprint.py`); the 300-row reconstruction
+  is 5.5-11.8 ms of it. At 0.314 ms on the device that saves at most ~11.5 ms,
+  a 3% whole-model win, and only if nothing else moves. At every smaller
+  fixture the saving is a fraction of a millisecond out of a 0.5-85 ms call.
+- **The Jacobi sweep, which is the other 97%, is not a candidate at all** -
+  0.19 flops/byte and sequential. Putting it on the device means a disjoint
+  matching per pass and different rounding, which the same-results rule rules
+  out.
+- **Only one benchmarked caller reaches a size where the win is measurable**
+  (`ws300` at 300 nodes), and the device set there is 2.1 MiB against a 3.4 MiB
+  host working set - the transfer is all latency, no bandwidth problem.
+
+**Reverted.** No GPU code is in `src/`, and nothing in `pixi run test` touches a
+device: the suite is CPU-only by construction rather than by a skip marker,
+because there is no GPU path to test. The prototype and the measurement scripts
+stay in `bench/` so the numbers above can be re-run:
+
+```bash
+pixi run python bench/_gpu_gate.py            # the flops/byte table
+pixi run python bench/_gpu_compare.py 3       # CPU vs device, interleaved
+pixi run mojo run bench/_gpu_pinv_model.mojo  # device only, with the check
+pixi run python bench/_gpu_footprint.py       # buffer sizes, reconstruction share
+```
+
+**One design problem that would have blocked a merge anyway.** `symmetric_pinv`
+writes the reconstruction into `a`, the caller's own `float64` array, and knows
+nothing about where that memory lives. A device path needs device-resident
+buffers plus a copy back into that host array, so it cannot be a branch inside
+the kernel: it has to be a decision the Python layer makes before the call -
+a different interface for one kernel, to save 3%.

@@ -393,6 +393,23 @@ dispatch floor. That is also still the honest reason the dense spectral paths
 lose to LAPACK's multithreaded BLAS on the same matrices: the port's eigensolver
 is serial, and it is the eigensolver that costs.
 
+**GPU.** There is no GPU path: the port is **CPU only**, and the one kernel that
+cleared the 2 flops/byte gate was measured and then reverted. `pinv_spectrum`'s
+`U diag(1/s) U.T` reconstruction is 25 flops/byte at d = 300, and a `max.gpu`
+prototype of exactly that kernel (one launch, inputs copied in once, result out
+once) is **bit-identical** to the host and 17.5x faster than the serial CPU loop
+- 0.314 ms against 5.496 ms. It was still not merged, because that loop is
+1.5-3.1% of whole `FGSD` on `ws300` (374.9 ms), so the best case is a 3%
+whole-model win, and it loses outright to more CPU workers at the sizes real
+callers pass. The other 97% is `jacobi_eigh`, which is 0.19 flops/byte - below
+the gate, so **CPU only: memory-bound** - and sequential besides.
+
+`bench/analysis.md` section 6 has the gate table, the CPU-versus-device numbers
+at d = 34, 60, 200 and 300, and the device-host buffer sizes; the prototype is
+`bench/_gpu_pinv_model.mojo`, and `bench/_gpu_gate.py` regenerates the table.
+Nothing in `pixi run test` touches a device - the suite is CPU-only by
+construction, so no test needed a skip marker.
+
 **Numerics.** Two toolchain facts shape the arithmetic. `std.math.log` and
 `std.math.exp` are SLEEF u10, good to about 1e-10 relative, so `mathfn.mojo`
 carries its own. And `stack_allocation` is not safe for kernel scratch: the
