@@ -226,7 +226,7 @@ built from edge lists rather than networkx generators, because the two
 environments resolve networkx 2.6 and 3.7 and a generator's RNG schedule
 changed between them.
 
-`176 passed` at the time of writing:
+`179 passed` at the time of writing:
 
 | test file | what it pins |
 | --- | --- |
@@ -261,55 +261,74 @@ hand.
 
 Machine: Intel(R) Xeon(R) CPU E5-2697 v4 @ 2.30GHz, 72 logical CPUs, shared with other jobs. Upstream side:
 Python 3.9.23, numpy 1.22.4, networkx 2.6.3, scipy 1.9.3. Port side: Python
-3.13.15, Mojo 1.2.0.dev2026092605. The table is one `pixi run bench`
-invocation, at 2026-09-26T22:08:49Z.
+3.13.15, Mojo 1.2.0.dev2026092605. The two columns are two halves of one
+`pixi run bench` measured on 2026-11-10: the karateclub column from
+18:29:47Z, the port column at 18:32:10Z. `bench/verify.md` has the raw halves
+and what could not be reproduced.
 
 | case | workload | karateclub 1.3.3 | mojo-karateclub | speedup |
 | --- | --- | --- | --- | --- |
-| LDP on karate | `LDP(bins=32)`, fit + `get_embedding` | 2.732 ms | 0.203 ms | 13.43x |
-| LDP on ws300 | `LDP(bins=32)`, fit + `get_embedding` | 0.0180 s | 1.238 ms | 14.52x |
-| FGSD on karate | `FGSD()`, fit + `get_embedding` | 2.130 ms | 0.868 ms | 2.45x |
-| FGSD on ws300 | `FGSD()`, fit + `get_embedding` | 0.4224 s | 1.4913 s | 0.28x (slower) |
-| SF on karate | `SF(dimensions=16)`, fit + `get_embedding` | 5.500 ms | 0.910 ms | 6.04x |
-| SF on ws300 | `SF(dimensions=32)`, fit + `get_embedding` | 0.4268 s | 1.4517 s | 0.29x (slower) |
-| NetLSD on karate | `NetLSD(scale_steps=32, approximations=8)` | 9.164 ms | 0.987 ms | 9.28x |
-| NetLSD on ws300 | `NetLSD(scale_steps=32, approximations=16)` | 0.2465 s | 1.4536 s | 0.17x (slower) |
-| LaplacianEigenmaps on karate | `LaplacianEigenmaps(dimensions=8)` | 9.200 ms | 1.363 ms | 6.75x |
-| LaplacianEigenmaps on ws300 | `LaplacianEigenmaps(dimensions=8)` | 0.0238 s | 1.4575 s | 0.02x (slower) |
-| NodeSketch on karate | `NodeSketch(dimensions=16)` | 0.0167 s | 0.434 ms | 38.56x |
-| NodeSketch on ws300 | `NodeSketch(dimensions=16)` | 0.2257 s | 3.092 ms | 72.99x |
-| FirstOrderLINE on karate | `FirstOrderLINE(dimensions=8, epochs=5)` | 0.996 ms | 0.167 ms | 5.95x |
-| FirstOrderLINE on ws300 | `FirstOrderLINE(dimensions=8, epochs=5)` | 0.0160 s | 1.798 ms | 8.91x |
-| SecondOrderLINE on karate | `SecondOrderLINE(dimensions=8, epochs=5)` | 1.064 ms | 0.182 ms | 5.84x |
-| SecondOrderLINE on ws300 | `SecondOrderLINE(dimensions=8, epochs=5)` | 0.0159 s | 1.675 ms | 9.51x |
-| WeisfeilerLehmanHashing on ws300 | `wl_iterations=3`, `get_graph_features` | 5.569 ms | 5.788 ms | 0.96x (slower) |
-| RandomWalker on ws300 | `walk_length=40, walk_number=10` | 0.4183 s | 0.0472 s | 8.86x |
-| BiasedRandomWalker on ws300 | `walk_length=40, walk_number=10, p=0.5, q=2.0` | 24.7254 s | 0.0542 s | 455.99x |
+| LDP on karate | `LDP(bins=32)`, fit + `get_embedding` | 2.493 ms | 0.221 ms | 11.28x |
+| LDP on ws300 | `LDP(bins=32)`, fit + `get_embedding` | 17.201 ms | 1.349 ms | 12.75x |
+| FGSD on karate | `FGSD()`, fit + `get_embedding` | 2.239 ms | 0.851 ms | 2.63x |
+| FGSD on ws300 | `FGSD()`, fit + `get_embedding` | 0.1315 s | 0.3601 s | 0.37x (slower) |
+| SF on karate | `SF(dimensions=16)`, fit + `get_embedding` | 5.437 ms | 0.887 ms | 6.13x |
+| SF on ws300 | `SF(dimensions=32)`, fit + `get_embedding` | 0.1033 s | 0.3563 s | 0.29x (slower) |
+| NetLSD on karate | `NetLSD(scale_steps=32, approximations=8)` | 9.703 ms | 1.363 ms | 7.12x |
+| NetLSD on ws300 | `NetLSD(scale_steps=32, approximations=16)` | 0.2519 s | 0.3540 s | 0.71x (slower) |
+| LaplacianEigenmaps on karate | `LaplacianEigenmaps(dimensions=8)` | 9.087 ms | 0.830 ms | 10.95x |
+| LaplacianEigenmaps on ws300 | `LaplacianEigenmaps(dimensions=8)` | 0.0231 s | 0.3614 s | 0.06x (slower) |
+| NodeSketch on karate | `NodeSketch(dimensions=16)` | 16.950 ms | 0.430 ms | 39.42x |
+| NodeSketch on ws300 | `NodeSketch(dimensions=16)` | 0.2056 s | 3.434 ms | 59.87x |
+| FirstOrderLINE on karate | `FirstOrderLINE(dimensions=8, epochs=5)` | 0.978 ms | 0.189 ms | 5.17x |
+| FirstOrderLINE on ws300 | `FirstOrderLINE(dimensions=8, epochs=5)` | 15.546 ms | 1.835 ms | 8.47x |
+| SecondOrderLINE on karate | `SecondOrderLINE(dimensions=8, epochs=5)` | 1.108 ms | 0.179 ms | 6.19x |
+| SecondOrderLINE on ws300 | `SecondOrderLINE(dimensions=8, epochs=5)` | 15.067 ms | 1.749 ms | 8.61x |
+| WeisfeilerLehmanHashing on ws300 | `wl_iterations=3`, `get_graph_features` | 4.992 ms | 4.670 ms | 1.07x |
+| RandomWalker on ws300 | `walk_length=40, walk_number=10` | 0.3805 s | 0.0488 s | 7.80x |
+| BiasedRandomWalker on ws300 | `walk_length=40, walk_number=10, p=0.5, q=2.0` | 24.4184 s | 0.0552 s | 442.36x |
+| EulerianDiffuser on karate | `EulerianDiffuser(diffusion_number=10, diffusion_cover=80)` | no timing: upstream does not terminate | 0.0207 s | not comparable |
 
-Geomean over the 19 cases: **4.35x**. This box is shared, and the upstream
-`ws300` column moves by a factor of four between runs - `FGSD` on `ws300`
-measured 0.0997 s, then 0.4224 s on consecutive runs, and `SF` on `ws300` 0.1016 s
-then 0.4268 s, because the ARPACK side is sensitive to whatever else the machine
-is doing. The port's own column is stable to about 5% across those runs. Read
-the direction of each row, not its third digit; the `ws300` spectral rows are
-slower in every run, and their exact ratio is not.
+Geomean over the 19 rows that ran on both sides: **4.97x**, from these rows'
+ratios. This box is shared, and the upstream `ws300` column moves by a factor of four between
+runs - `FGSD` on `ws300` measured 0.0997 s, 0.1315 s and 0.4224 s across
+different runs while this section was being written, because the ARPACK side is
+sensitive to whatever else the machine is doing. The port's own column was
+stable to within 5% across those runs. Read the direction of each row, not its
+third digit; the `ws300` spectral rows are slower in every run, and their exact
+ratio is not.
 
-Five cases are slower, and the pattern is not a mystery. The four `ws300`
+Five rows are slower, and the pattern is not a mystery. The four `ws300`
 spectral rows are the dense-Jacobi-versus-ARPACK trade: upstream asks ARPACK
 for the eight or sixteen eigenvalues it wants out of a sparse matrix and gets
-them in 24 to 430 ms, while the port diagonalises all 300x300 and then
-selects - about 1.4 s either way, and the gap is the whole cost of the dense
-sweep. `LaplacianEigenmaps` is the worst at 0.02x because the requested `k` is
+them in 23 to 252 ms, while the port diagonalises all 300x300 and then
+selects - about 0.36 s either way, and the gap is the whole cost of the dense
+sweep. `LaplacianEigenmaps` is the worst at 0.06x because the requested `k` is
 tiny (8) against a large `n`, which is exactly the regime ARPACK exists for.
-The fifth is `WeisfeilerLehmanHashing` at 0.96x, where the work is one MD5 per
-node per iteration and the port's MD5 is competitive but the surrounding
-recursion is not; upstream's `hashlib` is backed by OpenSSL's assembly.
+The fifth was `WeisfeilerLehmanHashing` in the earlier table, but on this run
+the port was not slower: 4.670 ms against 4.992 ms, 1.07x. The earlier table
+had the port at 0.96x, so the row is a wash either side of 1.0 rather than a
+win - the work is one MD5 per node per iteration, and upstream's `hashlib`
+backed by OpenSSL's assembly is not beaten by much either way.
+
+`EulerianDiffuser` is in the table because the earlier table did not have it.
+It has no upstream number because upstream does not terminate: `diffusion_cover`
+80 exceeds the 34 nodes of the karate club, and `while infected_counter <
+diffusion_cover` either loops forever once the whole component is infected or
+stops only by luck of the `if infected_counter == self.diffusion_cover: break`
+that sits inside the `if sample not in infected` arm. On this run it reached all
+34 nodes and then spun. That is the defect divergence 2 in "Documented
+divergences" describes; the port stops when no edge leaves the infected set and
+finishes in 20.7 ms. `bench/bench_upstream.py` times it last, so the hang costs
+the rest of the upstream column and not all of it, and killed on its own it
+takes `dist/upstream_timings.json` down with it - `bench/verify.md` says how to
+keep it from wedging a run. The row is kept rather than dropped.
 
 The wins are where upstream spends its time in Python-level loops.
-`BiasedRandomWalker` is 456x because upstream rebuilds a numpy array and calls
+`BiasedRandomWalker` is 442x because upstream rebuilds a numpy array and calls
 `np.piecewise` and `np.random.choice` at every one of 120000 steps, and
-`NodeSketch` is 39-73x because upstream counts with `Counter` objects in a
-double Python loop. `LDP` is 13-15x for the same reason one level up: upstream
+`NodeSketch` is 40-60x because upstream counts with `Counter` objects in a
+double Python loop. `LDP` is 11-13x for the same reason one level up: upstream
 builds its feature block out of a Python list comprehension per node.
 
 ## How it works
