@@ -15,7 +15,7 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
 TIMINGS="dist/upstream_timings.json"
 
-if [ "${PIXI_IN_SHELL:-0}" != "1" ] && [ "${BENCH_IN_PIXI:-0}" != "1" ]; then
+if [ "${PIXI_IN_SHELL:-0}" != "1" ] && [ "${BENCH_IN_PIXI:-0}" != "1" ] && [ -z "${BENCH_NO_REENTRY:-}" ]; then
     # Launched outside `pixi run`, so `python` on PATH is not the environment
     # the port is built against. Go back in through the task that owns the
     # machine-wide lock, and mark the re-entry so this cannot recurse.

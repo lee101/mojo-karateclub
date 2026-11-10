@@ -1,0 +1,2443 @@
+[
+ {
+  "case": "LDP/karate",
+  "case_json": {
+   "getrusage": true,
+   "graph": "karate",
+   "graph_level": true,
+   "key": "LDP/karate",
+   "kind": "estimator",
+   "klass": "LDP",
+   "kwargs": {
+    "bins": 32
+   },
+   "split": true
+  },
+  "construct_s": 2.3739412426948547e-06,
+  "fit_s": 0.0005737959872931242,
+  "get_embedding_s": 3.2740645110607147e-06,
+  "n": 34,
+  "profile": [
+   "         914 function calls in 0.001 seconds",
+   "",
+   "   Ordered by: cumulative time",
+   "   List reduced from 65 to 18 due to restriction <18>",
+   "",
+   "   ncalls  tottime  percall  cumtime  percall filename:lineno(function)",
+   "        1    0.000    0.000    0.001    0.001 /nvme0n1-disk/code/mojo-karateclub/bench/_analyze_worker.py:118(whole)",
+   "        1    0.000    0.000    0.001    0.001 /nvme0n1-disk/code/mojo-karateclub/bench/_analyze_worker.py:89(fit)",
+   "        1    0.000    0.000    0.001    0.001 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/graph_embedding.py:113(fit)",
+   "        1    0.000    0.000    0.001    0.001 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/graph_embedding.py:90(_calculate_ldp)",
+   "        1    0.000    0.000    0.001    0.001 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/graph_embedding.py:31(_graph_csr)",
+   "        1    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/estimator.py:78(csr_from_graph)",
+   "        1    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/estimator.py:71(_check_graphs)",
+   "        1    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/estimator.py:64(_check_graph)",
+   "        1    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/estimator.py:48(_ensure_integrity)",
+   "        1    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/networkx/classes/graph.py:985(add_edges_from)",
+   "        1    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/_ffi.py:236(_csr)",
+   "      571    0.000    0.000    0.000    0.000 {method 'append' of 'list' objects}",
+   "       10    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/_ffi.py:165(_address)",
+   "        1    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/_ffi.py:206(_csr_rows)",
+   "        4    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/_ffi.py:179(_index)",
+   "        6    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/_ffi.py:175(_data)",
+   "        2    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/estimator.py:123(_as_indices)",
+   "        3    0.000    0.000    0.000    0.000 {built-in method numpy.asarray}",
+   "",
+   ""
+  ],
+  "rss_delta_bytes": 0,
+  "rusage": {
+   "inblock": 0,
+   "majflt": 0,
+   "minflt": 1,
+   "stime": 0.0,
+   "utime": 0.0003589999999999982
+  },
+  "traced_bytes_top": [
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/networkx/classes/graph.py",
+    "0",
+    7648
+   ],
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/_ffi.py",
+    "0",
+    2008
+   ],
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/estimator.py",
+    "0",
+    1176
+   ],
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/numpy/_core/_methods.py",
+    "0",
+    1072
+   ],
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/numpy/_core/fromnumeric.py",
+    "0",
+    1068
+   ],
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/bench/_analyze_worker.py",
+    "0",
+    912
+   ],
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/tracemalloc.py",
+    "0",
+    656
+   ],
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/numpy/lib/_function_base_impl.py",
+    "0",
+    56
+   ],
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/graph_embedding.py",
+    "0",
+    32
+   ]
+  ],
+  "traced_total_bytes": 14628,
+  "whole_s": 0.0002982410369440913
+ },
+ {
+  "case": "LDP/ws300",
+  "case_json": {
+   "getrusage": true,
+   "graph": "ws300",
+   "graph_level": true,
+   "key": "LDP/ws300",
+   "kind": "estimator",
+   "klass": "LDP",
+   "kwargs": {
+    "bins": 32
+   },
+   "split": true
+  },
+  "construct_s": 2.3959437385201454e-06,
+  "fit_s": 0.002399225952103734,
+  "get_embedding_s": 3.044959157705307e-06,
+  "n": 300,
+  "profile": [
+   "         10040 function calls in 0.005 seconds",
+   "",
+   "   Ordered by: cumulative time",
+   "   List reduced from 65 to 18 due to restriction <18>",
+   "",
+   "   ncalls  tottime  percall  cumtime  percall filename:lineno(function)",
+   "        1    0.000    0.000    0.005    0.005 /nvme0n1-disk/code/mojo-karateclub/bench/_analyze_worker.py:118(whole)",
+   "        1    0.000    0.000    0.005    0.005 /nvme0n1-disk/code/mojo-karateclub/bench/_analyze_worker.py:89(fit)",
+   "        1    0.000    0.000    0.005    0.005 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/graph_embedding.py:113(fit)",
+   "        1    0.000    0.000    0.004    0.004 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/graph_embedding.py:90(_calculate_ldp)",
+   "        1    0.000    0.000    0.004    0.004 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/graph_embedding.py:31(_graph_csr)",
+   "        1    0.002    0.002    0.004    0.004 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/estimator.py:78(csr_from_graph)",
+   "     8101    0.001    0.000    0.001    0.000 {method 'append' of 'list' objects}",
+   "        1    0.000    0.000    0.001    0.001 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/estimator.py:71(_check_graphs)",
+   "        1    0.000    0.000    0.001    0.001 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/estimator.py:64(_check_graph)",
+   "        1    0.000    0.000    0.001    0.001 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/estimator.py:48(_ensure_integrity)",
+   "        1    0.000    0.000    0.001    0.001 /nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/networkx/classes/graph.py:985(add_edges_from)",
+   "        3    0.000    0.000    0.000    0.000 {built-in method numpy.asarray}",
+   "      300    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/networkx/classes/graph.py:1343(neighbors)",
+   "      600    0.000    0.000    0.000    0.000 {method 'update' of 'dict' objects}",
+   "        1    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/_ffi.py:236(_csr)",
+   "      300    0.000    0.000    0.000    0.000 {method 'get' of 'dict' objects}",
+   "        1    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/_ffi.py:206(_csr_rows)",
+   "       10    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/_ffi.py:165(_address)",
+   "",
+   ""
+  ],
+  "rss_delta_bytes": 0,
+  "rusage": {
+   "inblock": 0,
+   "majflt": 0,
+   "minflt": 2,
+   "stime": 3.100000000000325e-05,
+   "utime": 0.0012639999999999318
+  },
+  "traced_bytes_top": [
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/networkx/classes/graph.py",
+    "0",
+    31544
+   ],
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/_ffi.py",
+    "0",
+    2728
+   ],
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/estimator.py",
+    "0",
+    1376
+   ],
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/numpy/_core/_methods.py",
+    "0",
+    1072
+   ],
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/numpy/_core/fromnumeric.py",
+    "0",
+    940
+   ],
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/bench/_analyze_worker.py",
+    "0",
+    912
+   ],
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/tracemalloc.py",
+    "0",
+    656
+   ],
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/numpy/lib/_function_base_impl.py",
+    "0",
+    56
+   ],
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/graph_embedding.py",
+    "0",
+    32
+   ]
+  ],
+  "traced_total_bytes": 39316,
+  "whole_s": 0.0012599130859598517
+ },
+ {
+  "case": "LDP/ba2000",
+  "case_json": {
+   "getrusage": true,
+   "graph": "ba2000",
+   "graph_level": true,
+   "key": "LDP/ba2000",
+   "kind": "estimator",
+   "klass": "LDP",
+   "kwargs": {
+    "bins": 32
+   },
+   "split": true
+  },
+  "construct_s": 2.6810448616743088e-06,
+  "fit_s": 0.015915550058707595,
+  "get_embedding_s": 2.922024577856064e-06,
+  "n": 2000,
+  "profile": [
+   "         54086 function calls in 0.039 seconds",
+   "",
+   "   Ordered by: cumulative time",
+   "   List reduced from 65 to 18 due to restriction <18>",
+   "",
+   "   ncalls  tottime  percall  cumtime  percall filename:lineno(function)",
+   "        1    0.000    0.000    0.039    0.039 /nvme0n1-disk/code/mojo-karateclub/bench/_analyze_worker.py:118(whole)",
+   "        1    0.000    0.000    0.039    0.039 /nvme0n1-disk/code/mojo-karateclub/bench/_analyze_worker.py:89(fit)",
+   "        1    0.000    0.000    0.039    0.039 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/graph_embedding.py:113(fit)",
+   "        1    0.000    0.000    0.034    0.034 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/graph_embedding.py:90(_calculate_ldp)",
+   "        1    0.000    0.000    0.033    0.033 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/graph_embedding.py:31(_graph_csr)",
+   "        1    0.018    0.018    0.033    0.033 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/estimator.py:78(csr_from_graph)",
+   "    41947    0.011    0.000    0.011    0.000 {method 'append' of 'list' objects}",
+   "        1    0.000    0.000    0.005    0.005 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/estimator.py:71(_check_graphs)",
+   "        1    0.000    0.000    0.005    0.005 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/estimator.py:64(_check_graph)",
+   "        1    0.000    0.000    0.005    0.005 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/estimator.py:48(_ensure_integrity)",
+   "        1    0.003    0.003    0.005    0.005 /nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/networkx/classes/graph.py:985(add_edges_from)",
+   "        3    0.003    0.001    0.003    0.001 {built-in method numpy.asarray}",
+   "     2000    0.001    0.000    0.002    0.000 /nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/networkx/classes/graph.py:1343(neighbors)",
+   "     4000    0.001    0.000    0.001    0.000 {method 'update' of 'dict' objects}",
+   "     2000    0.001    0.000    0.001    0.000 {method 'get' of 'dict' objects}",
+   "     2002    0.000    0.000    0.000    0.000 {built-in method builtins.iter}",
+   "     2005    0.000    0.000    0.000    0.000 {built-in method builtins.len}",
+   "        1    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/estimator.py:56(_check_indexing)",
+   "",
+   ""
+  ],
+  "rss_delta_bytes": 16384,
+  "rusage": {
+   "inblock": 0,
+   "majflt": 0,
+   "minflt": 0,
+   "stime": 0.0,
+   "utime": 0.008809000000000289
+  },
+  "traced_bytes_top": [
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/networkx/classes/graph.py",
+    "0",
+    232232
+   ],
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/estimator.py",
+    "0",
+    55944
+   ],
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/_ffi.py",
+    "0",
+    2536
+   ],
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/numpy/_core/_methods.py",
+    "0",
+    1072
+   ],
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/bench/_analyze_worker.py",
+    "0",
+    912
+   ],
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/numpy/_core/fromnumeric.py",
+    "0",
+    889
+   ],
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/tracemalloc.py",
+    "0",
+    656
+   ],
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/numpy/lib/_function_base_impl.py",
+    "0",
+    56
+   ],
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/graph_embedding.py",
+    "0",
+    32
+   ]
+  ],
+  "traced_total_bytes": 294329,
+  "whole_s": 0.008432388072833419
+ },
+ {
+  "case": "FGSD/karate",
+  "case_json": {
+   "getrusage": true,
+   "graph": "karate",
+   "graph_level": true,
+   "key": "FGSD/karate",
+   "kind": "estimator",
+   "klass": "FGSD",
+   "kwargs": {},
+   "split": true
+  },
+  "construct_s": 1.8069986253976822e-06,
+  "fit_s": 0.001377294072881341,
+  "get_embedding_s": 3.3159740269184113e-06,
+  "n": 34,
+  "profile": [
+   "         1882 function calls in 0.002 seconds",
+   "",
+   "   Ordered by: cumulative time",
+   "   List reduced from 76 to 18 due to restriction <18>",
+   "",
+   "   ncalls  tottime  percall  cumtime  percall filename:lineno(function)",
+   "        1    0.000    0.000    0.002    0.002 /nvme0n1-disk/code/mojo-karateclub/bench/_analyze_worker.py:118(whole)",
+   "        1    0.000    0.000    0.002    0.002 /nvme0n1-disk/code/mojo-karateclub/bench/_analyze_worker.py:89(fit)",
+   "        1    0.000    0.000    0.002    0.002 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/graph_embedding.py:205(fit)",
+   "        1    0.000    0.000    0.002    0.002 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/graph_embedding.py:165(_calculate_fgsd)",
+   "        1    0.000    0.000    0.001    0.001 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/graph_embedding.py:46(_spectral_csr)",
+   "        1    0.000    0.000    0.001    0.001 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/graph_embedding.py:31(_graph_csr)",
+   "        1    0.000    0.000    0.001    0.001 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/estimator.py:78(csr_from_graph)",
+   "      190    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/networkx/classes/graph.py:508(__getitem__)",
+   "      190    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/networkx/classes/coreviews.py:81(__getitem__)",
+   "        1    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/estimator.py:71(_check_graphs)",
+   "        1    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/estimator.py:64(_check_graph)",
+   "      571    0.000    0.000    0.000    0.000 {method 'append' of 'list' objects}",
+   "        1    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/estimator.py:48(_ensure_integrity)",
+   "        1    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/networkx/classes/graph.py:985(add_edges_from)",
+   "        1    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/_ffi.py:236(_csr)",
+   "      224    0.000    0.000    0.000    0.000 {method 'get' of 'dict' objects}",
+   "       10    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/_ffi.py:165(_address)",
+   "        1    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/_ffi.py:206(_csr_rows)",
+   "",
+   ""
+  ],
+  "rss_delta_bytes": 4096,
+  "rusage": {
+   "inblock": 0,
+   "majflt": 0,
+   "minflt": 0,
+   "stime": 0.0,
+   "utime": 0.0008440000000000669
+  },
+  "traced_bytes_top": [
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/networkx/classes/graph.py",
+    "0",
+    7688
+   ],
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/_ffi.py",
+    "0",
+    3472
+   ],
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/estimator.py",
+    "0",
+    1232
+   ],
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/numpy/_core/_methods.py",
+    "0",
+    1072
+   ],
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/numpy/_core/fromnumeric.py",
+    "0",
+    1017
+   ],
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/tracemalloc.py",
+    "0",
+    656
+   ],
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/bench/_analyze_worker.py",
+    "0",
+    312
+   ],
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/graph_embedding.py",
+    "0",
+    168
+   ],
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/numpy/lib/_function_base_impl.py",
+    "0",
+    56
+   ]
+  ],
+  "traced_total_bytes": 15673,
+  "whole_s": 0.000816027051769197
+ },
+ {
+  "case": "FGSD/ws300",
+  "case_json": {
+   "getrusage": true,
+   "graph": "ws300",
+   "graph_level": true,
+   "key": "FGSD/ws300",
+   "kind": "estimator",
+   "klass": "FGSD",
+   "kwargs": {},
+   "split": true
+  },
+  "construct_s": 1.6309786587953568e-06,
+  "fit_s": 0.3597731759073213,
+  "get_embedding_s": 4.364992491900921e-06,
+  "n": 300,
+  "profile": [
+   "         23558 function calls in 0.524 seconds",
+   "",
+   "   Ordered by: cumulative time",
+   "   List reduced from 76 to 18 due to restriction <18>",
+   "",
+   "   ncalls  tottime  percall  cumtime  percall filename:lineno(function)",
+   "        1    0.000    0.000    0.524    0.524 /nvme0n1-disk/code/mojo-karateclub/bench/_analyze_worker.py:118(whole)",
+   "        1    0.000    0.000    0.524    0.524 /nvme0n1-disk/code/mojo-karateclub/bench/_analyze_worker.py:89(fit)",
+   "        1    0.000    0.000    0.524    0.524 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/graph_embedding.py:205(fit)",
+   "        1    0.504    0.504    0.522    0.522 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/graph_embedding.py:165(_calculate_fgsd)",
+   "        1    0.000    0.000    0.017    0.017 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/graph_embedding.py:46(_spectral_csr)",
+   "        1    0.000    0.000    0.017    0.017 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/graph_embedding.py:31(_graph_csr)",
+   "        1    0.008    0.008    0.017    0.017 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/estimator.py:78(csr_from_graph)",
+   "     2700    0.002    0.000    0.005    0.000 /nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/networkx/classes/graph.py:508(__getitem__)",
+   "     2700    0.002    0.000    0.003    0.000 /nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/networkx/classes/coreviews.py:81(__getitem__)",
+   "     8101    0.002    0.000    0.002    0.000 {method 'append' of 'list' objects}",
+   "        1    0.000    0.000    0.001    0.001 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/estimator.py:71(_check_graphs)",
+   "        1    0.000    0.000    0.001    0.001 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/estimator.py:64(_check_graph)",
+   "        1    0.000    0.000    0.001    0.001 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/estimator.py:48(_ensure_integrity)",
+   "        1    0.001    0.001    0.001    0.001 /nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/networkx/classes/graph.py:985(add_edges_from)",
+   "     3000    0.001    0.000    0.001    0.000 {method 'get' of 'dict' objects}",
+   "     2700    0.001    0.000    0.001    0.000 /nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/networkx/classes/coreviews.py:53(__getitem__)",
+   "        3    0.001    0.000    0.001    0.000 {built-in method numpy.asarray}",
+   "     2700    0.001    0.000    0.001    0.000 /nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/networkx/classes/coreviews.py:44(__init__)",
+   "",
+   ""
+  ],
+  "rss_delta_bytes": 0,
+  "rusage": {
+   "inblock": 0,
+   "majflt": 0,
+   "minflt": 873,
+   "stime": 0.0010010000000000019,
+   "utime": 0.3584930000000002
+  },
+  "traced_bytes_top": [
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/networkx/classes/graph.py",
+    "0",
+    31584
+   ],
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/_ffi.py",
+    "0",
+    3280
+   ],
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/estimator.py",
+    "0",
+    1376
+   ],
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/numpy/_core/_methods.py",
+    "0",
+    1072
+   ],
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/numpy/_core/fromnumeric.py",
+    "0",
+    889
+   ],
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/tracemalloc.py",
+    "0",
+    656
+   ],
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/bench/_analyze_worker.py",
+    "0",
+    312
+   ],
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/graph_embedding.py",
+    "0",
+    168
+   ],
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/numpy/lib/_function_base_impl.py",
+    "0",
+    56
+   ]
+  ],
+  "traced_total_bytes": 39393,
+  "whole_s": 0.3554930250393227
+ },
+ {
+  "case": "SF/karate",
+  "case_json": {
+   "getrusage": true,
+   "graph": "karate",
+   "graph_level": true,
+   "key": "SF/karate",
+   "kind": "estimator",
+   "klass": "SF",
+   "kwargs": {
+    "dimensions": 16
+   },
+   "split": true
+  },
+  "construct_s": 2.393033355474472e-06,
+  "fit_s": 0.001304358011111617,
+  "get_embedding_s": 2.694898284971714e-06,
+  "n": 34,
+  "profile": [
+   "         1881 function calls in 0.002 seconds",
+   "",
+   "   Ordered by: cumulative time",
+   "   List reduced from 76 to 18 due to restriction <18>",
+   "",
+   "   ncalls  tottime  percall  cumtime  percall filename:lineno(function)",
+   "        1    0.000    0.000    0.002    0.002 /nvme0n1-disk/code/mojo-karateclub/bench/_analyze_worker.py:118(whole)",
+   "        1    0.000    0.000    0.002    0.002 /nvme0n1-disk/code/mojo-karateclub/bench/_analyze_worker.py:89(fit)",
+   "        1    0.000    0.000    0.002    0.002 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/graph_embedding.py:290(fit)",
+   "        1    0.000    0.000    0.002    0.002 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/graph_embedding.py:253(_calculate_sf)",
+   "        1    0.000    0.000    0.001    0.001 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/graph_embedding.py:46(_spectral_csr)",
+   "        1    0.000    0.000    0.001    0.001 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/graph_embedding.py:31(_graph_csr)",
+   "        1    0.000    0.000    0.001    0.001 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/estimator.py:78(csr_from_graph)",
+   "      190    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/networkx/classes/graph.py:508(__getitem__)",
+   "      190    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/networkx/classes/coreviews.py:81(__getitem__)",
+   "        1    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/estimator.py:71(_check_graphs)",
+   "        1    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/estimator.py:64(_check_graph)",
+   "        1    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/estimator.py:48(_ensure_integrity)",
+   "        1    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/networkx/classes/graph.py:985(add_edges_from)",
+   "      571    0.000    0.000    0.000    0.000 {method 'append' of 'list' objects}",
+   "        1    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/_ffi.py:236(_csr)",
+   "        1    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/_ffi.py:206(_csr_rows)",
+   "      224    0.000    0.000    0.000    0.000 {method 'get' of 'dict' objects}",
+   "       10    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/_ffi.py:165(_address)",
+   "",
+   ""
+  ],
+  "rss_delta_bytes": 4096,
+  "rusage": {
+   "inblock": 0,
+   "majflt": 0,
+   "minflt": 1,
+   "stime": 0.0,
+   "utime": 0.0009030000000000982
+  },
+  "traced_bytes_top": [
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/networkx/classes/graph.py",
+    "0",
+    7688
+   ],
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/_ffi.py",
+    "0",
+    1880
+   ],
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/numpy/_core/fromnumeric.py",
+    "0",
+    1260
+   ],
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/estimator.py",
+    "0",
+    1176
+   ],
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/numpy/_core/_methods.py",
+    "0",
+    1072
+   ],
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/bench/_analyze_worker.py",
+    "0",
+    912
+   ],
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/tracemalloc.py",
+    "0",
+    656
+   ],
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/graph_embedding.py",
+    "0",
+    96
+   ],
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/numpy/lib/_function_base_impl.py",
+    "0",
+    56
+   ]
+  ],
+  "traced_total_bytes": 14796,
+  "whole_s": 0.0008241030154749751
+ },
+ {
+  "case": "SF/ws300",
+  "case_json": {
+   "getrusage": true,
+   "graph": "ws300",
+   "graph_level": true,
+   "key": "SF/ws300",
+   "kind": "estimator",
+   "klass": "SF",
+   "kwargs": {
+    "dimensions": 32
+   },
+   "split": true
+  },
+  "construct_s": 3.6730198189616203e-06,
+  "fit_s": 0.3506884160451591,
+  "get_embedding_s": 2.3439060896635056e-06,
+  "n": 300,
+  "profile": [
+   "         23557 function calls in 0.367 seconds",
+   "",
+   "   Ordered by: cumulative time",
+   "   List reduced from 76 to 18 due to restriction <18>",
+   "",
+   "   ncalls  tottime  percall  cumtime  percall filename:lineno(function)",
+   "        1    0.000    0.000    0.367    0.367 /nvme0n1-disk/code/mojo-karateclub/bench/_analyze_worker.py:118(whole)",
+   "        1    0.000    0.000    0.367    0.367 /nvme0n1-disk/code/mojo-karateclub/bench/_analyze_worker.py:89(fit)",
+   "        1    0.000    0.000    0.367    0.367 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/graph_embedding.py:290(fit)",
+   "        1    0.355    0.355    0.366    0.366 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/graph_embedding.py:253(_calculate_sf)",
+   "        1    0.000    0.000    0.011    0.011 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/graph_embedding.py:46(_spectral_csr)",
+   "        1    0.000    0.000    0.011    0.011 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/graph_embedding.py:31(_graph_csr)",
+   "        1    0.005    0.005    0.011    0.011 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/estimator.py:78(csr_from_graph)",
+   "     2700    0.001    0.000    0.003    0.000 /nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/networkx/classes/graph.py:508(__getitem__)",
+   "     2700    0.001    0.000    0.002    0.000 /nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/networkx/classes/coreviews.py:81(__getitem__)",
+   "     8101    0.002    0.000    0.002    0.000 {method 'append' of 'list' objects}",
+   "        1    0.000    0.000    0.001    0.001 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/estimator.py:71(_check_graphs)",
+   "        1    0.000    0.000    0.001    0.001 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/estimator.py:64(_check_graph)",
+   "        1    0.000    0.000    0.001    0.001 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/estimator.py:48(_ensure_integrity)",
+   "        1    0.001    0.001    0.001    0.001 /nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/networkx/classes/graph.py:985(add_edges_from)",
+   "     3000    0.001    0.000    0.001    0.000 {method 'get' of 'dict' objects}",
+   "     2700    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/networkx/classes/coreviews.py:53(__getitem__)",
+   "     2700    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/networkx/classes/coreviews.py:44(__init__)",
+   "        3    0.000    0.000    0.000    0.000 {built-in method numpy.asarray}",
+   "",
+   ""
+  ],
+  "rss_delta_bytes": 4096,
+  "rusage": {
+   "inblock": 0,
+   "majflt": 0,
+   "minflt": 536,
+   "stime": 0.002020000000000008,
+   "utime": 0.3585799999999999
+  },
+  "traced_bytes_top": [
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/networkx/classes/graph.py",
+    "0",
+    31584
+   ],
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/_ffi.py",
+    "0",
+    1720
+   ],
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/estimator.py",
+    "0",
+    1376
+   ],
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/numpy/_core/fromnumeric.py",
+    "0",
+    1132
+   ],
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/numpy/_core/_methods.py",
+    "0",
+    1072
+   ],
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/bench/_analyze_worker.py",
+    "0",
+    912
+   ],
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/tracemalloc.py",
+    "0",
+    656
+   ],
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/graph_embedding.py",
+    "0",
+    96
+   ],
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/numpy/lib/_function_base_impl.py",
+    "0",
+    56
+   ]
+  ],
+  "traced_total_bytes": 38604,
+  "whole_s": 0.3492869969923049
+ },
+ {
+  "case": "NetLSD/karate",
+  "case_json": {
+   "getrusage": true,
+   "graph": "karate",
+   "graph_level": true,
+   "key": "NetLSD/karate",
+   "kind": "estimator",
+   "klass": "NetLSD",
+   "kwargs": {
+    "approximations": 8,
+    "scale_steps": 32
+   },
+   "split": true
+  },
+  "construct_s": 2.689892426133156e-06,
+  "fit_s": 0.0015179719775915146,
+  "get_embedding_s": 2.561020664870739e-06,
+  "n": 34,
+  "profile": [
+   "         1914 function calls in 0.002 seconds",
+   "",
+   "   Ordered by: cumulative time",
+   "   List reduced from 76 to 18 due to restriction <18>",
+   "",
+   "   ncalls  tottime  percall  cumtime  percall filename:lineno(function)",
+   "        1    0.000    0.000    0.002    0.002 /nvme0n1-disk/code/mojo-karateclub/bench/_analyze_worker.py:118(whole)",
+   "        1    0.000    0.000    0.002    0.002 /nvme0n1-disk/code/mojo-karateclub/bench/_analyze_worker.py:89(fit)",
+   "        1    0.000    0.000    0.002    0.002 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/graph_embedding.py:414(fit)",
+   "        1    0.001    0.001    0.002    0.002 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/graph_embedding.py:362(_calculate_netlsd)",
+   "        1    0.000    0.000    0.001    0.001 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/graph_embedding.py:46(_spectral_csr)",
+   "        1    0.000    0.000    0.001    0.001 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/graph_embedding.py:31(_graph_csr)",
+   "        1    0.000    0.000    0.001    0.001 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/estimator.py:78(csr_from_graph)",
+   "      190    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/networkx/classes/graph.py:508(__getitem__)",
+   "        1    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/estimator.py:71(_check_graphs)",
+   "        1    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/estimator.py:64(_check_graph)",
+   "      190    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/networkx/classes/coreviews.py:81(__getitem__)",
+   "      571    0.000    0.000    0.000    0.000 {method 'append' of 'list' objects}",
+   "        1    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/estimator.py:48(_ensure_integrity)",
+   "        1    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/networkx/classes/graph.py:985(add_edges_from)",
+   "        1    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/_ffi.py:236(_csr)",
+   "       15    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/_ffi.py:165(_address)",
+   "      224    0.000    0.000    0.000    0.000 {method 'get' of 'dict' objects}",
+   "        1    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/_ffi.py:206(_csr_rows)",
+   "",
+   ""
+  ],
+  "rss_delta_bytes": 0,
+  "rusage": {
+   "inblock": 0,
+   "majflt": 0,
+   "minflt": 1,
+   "stime": 0.0,
+   "utime": 0.0009680000000000799
+  },
+  "traced_bytes_top": [
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/networkx/classes/graph.py",
+    "0",
+    7688
+   ],
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/_ffi.py",
+    "0",
+    1624
+   ],
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/numpy/_core/fromnumeric.py",
+    "0",
+    1260
+   ],
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/estimator.py",
+    "0",
+    1176
+   ],
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/numpy/_core/_methods.py",
+    "0",
+    1072
+   ],
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/bench/_analyze_worker.py",
+    "0",
+    912
+   ],
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/tracemalloc.py",
+    "0",
+    656
+   ],
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/graph_embedding.py",
+    "0",
+    96
+   ],
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/numpy/lib/_function_base_impl.py",
+    "0",
+    56
+   ]
+  ],
+  "traced_total_bytes": 14540,
+  "whole_s": 0.0009190200362354517
+ },
+ {
+  "case": "NetLSD/ws300",
+  "case_json": {
+   "getrusage": true,
+   "graph": "ws300",
+   "graph_level": true,
+   "key": "NetLSD/ws300",
+   "kind": "estimator",
+   "klass": "NetLSD",
+   "kwargs": {
+    "approximations": 16,
+    "scale_steps": 32
+   },
+   "split": true
+  },
+  "construct_s": 5.16790896654129e-06,
+  "fit_s": 0.35544147598557174,
+  "get_embedding_s": 2.488028258085251e-06,
+  "n": 300,
+  "profile": [
+   "         23590 function calls in 0.362 seconds",
+   "",
+   "   Ordered by: cumulative time",
+   "   List reduced from 76 to 18 due to restriction <18>",
+   "",
+   "   ncalls  tottime  percall  cumtime  percall filename:lineno(function)",
+   "        1    0.000    0.000    0.362    0.362 /nvme0n1-disk/code/mojo-karateclub/bench/_analyze_worker.py:118(whole)",
+   "        1    0.000    0.000    0.362    0.362 /nvme0n1-disk/code/mojo-karateclub/bench/_analyze_worker.py:89(fit)",
+   "        1    0.000    0.000    0.362    0.362 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/graph_embedding.py:414(fit)",
+   "        1    0.351    0.351    0.361    0.361 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/graph_embedding.py:362(_calculate_netlsd)",
+   "        1    0.000    0.000    0.010    0.010 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/graph_embedding.py:46(_spectral_csr)",
+   "        1    0.000    0.000    0.010    0.010 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/graph_embedding.py:31(_graph_csr)",
+   "        1    0.005    0.005    0.010    0.010 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/estimator.py:78(csr_from_graph)",
+   "     2700    0.001    0.000    0.002    0.000 /nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/networkx/classes/graph.py:508(__getitem__)",
+   "     2700    0.001    0.000    0.002    0.000 /nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/networkx/classes/coreviews.py:81(__getitem__)",
+   "     8101    0.001    0.000    0.001    0.000 {method 'append' of 'list' objects}",
+   "        1    0.000    0.000    0.001    0.001 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/estimator.py:71(_check_graphs)",
+   "        1    0.000    0.000    0.001    0.001 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/estimator.py:64(_check_graph)",
+   "        1    0.000    0.000    0.001    0.001 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/estimator.py:48(_ensure_integrity)",
+   "        1    0.000    0.000    0.001    0.001 /nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/networkx/classes/graph.py:985(add_edges_from)",
+   "     3000    0.001    0.000    0.001    0.000 {method 'get' of 'dict' objects}",
+   "     2700    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/networkx/classes/coreviews.py:53(__getitem__)",
+   "        3    0.000    0.000    0.000    0.000 {built-in method numpy.asarray}",
+   "     2700    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/networkx/classes/coreviews.py:44(__init__)",
+   "",
+   ""
+  ],
+  "rss_delta_bytes": 20480,
+  "rusage": {
+   "inblock": 0,
+   "majflt": 0,
+   "minflt": 531,
+   "stime": 0.0,
+   "utime": 0.37963599999999964
+  },
+  "traced_bytes_top": [
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/networkx/classes/graph.py",
+    "0",
+    31584
+   ],
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/estimator.py",
+    "0",
+    1376
+   ],
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/_ffi.py",
+    "0",
+    1096
+   ],
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/numpy/_core/_methods.py",
+    "0",
+    1072
+   ],
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/numpy/_core/fromnumeric.py",
+    "0",
+    1030
+   ],
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/bench/_analyze_worker.py",
+    "0",
+    912
+   ],
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/tracemalloc.py",
+    "0",
+    656
+   ],
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/graph_embedding.py",
+    "0",
+    96
+   ],
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/numpy/lib/_function_base_impl.py",
+    "0",
+    56
+   ]
+  ],
+  "traced_total_bytes": 37878,
+  "whole_s": 0.35316264000721276
+ },
+ {
+  "case": "LaplacianEigenmaps/karate",
+  "case_json": {
+   "getrusage": true,
+   "graph": "karate",
+   "graph_level": false,
+   "key": "LaplacianEigenmaps/karate",
+   "kind": "estimator",
+   "klass": "LaplacianEigenmaps",
+   "kwargs": {
+    "dimensions": 8
+   },
+   "split": true
+  },
+  "construct_s": 2.3319153115153313e-06,
+  "fit_s": 0.0013478239998221397,
+  "get_embedding_s": 2.6705674827098846e-07,
+  "n": 34,
+  "profile": [
+   "         1867 function calls in 0.002 seconds",
+   "",
+   "   Ordered by: cumulative time",
+   "   List reduced from 70 to 18 due to restriction <18>",
+   "",
+   "   ncalls  tottime  percall  cumtime  percall filename:lineno(function)",
+   "        1    0.000    0.000    0.002    0.002 /nvme0n1-disk/code/mojo-karateclub/bench/_analyze_worker.py:118(whole)",
+   "        1    0.000    0.000    0.002    0.002 /nvme0n1-disk/code/mojo-karateclub/bench/_analyze_worker.py:89(fit)",
+   "        1    0.000    0.000    0.002    0.002 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/node_embedding.py:776(fit)",
+   "        1    0.000    0.000    0.001    0.001 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/node_embedding.py:47(_kernel_csr)",
+   "        1    0.000    0.000    0.001    0.001 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/estimator.py:78(csr_from_graph)",
+   "      190    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/networkx/classes/graph.py:508(__getitem__)",
+   "        1    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/estimator.py:64(_check_graph)",
+   "      190    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/networkx/classes/coreviews.py:81(__getitem__)",
+   "      571    0.000    0.000    0.000    0.000 {method 'append' of 'list' objects}",
+   "        1    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/estimator.py:48(_ensure_integrity)",
+   "        1    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/networkx/classes/graph.py:985(add_edges_from)",
+   "        1    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/_ffi.py:236(_csr)",
+   "        1    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/_ffi.py:206(_csr_rows)",
+   "      224    0.000    0.000    0.000    0.000 {method 'get' of 'dict' objects}",
+   "        9    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/_ffi.py:165(_address)",
+   "        2    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/estimator.py:123(_as_indices)",
+   "        3    0.000    0.000    0.000    0.000 {built-in method numpy.asarray}",
+   "        1    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/estimator.py:43(_set_seed)",
+   "",
+   ""
+  ],
+  "rss_delta_bytes": 0,
+  "rusage": {
+   "inblock": 0,
+   "majflt": 0,
+   "minflt": 1,
+   "stime": 0.0,
+   "utime": 0.0008360000000000589
+  },
+  "traced_bytes_top": [
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/networkx/classes/graph.py",
+    "0",
+    7688
+   ],
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/_ffi.py",
+    "0",
+    3944
+   ],
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/estimator.py",
+    "0",
+    1176
+   ],
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/numpy/_core/_methods.py",
+    "0",
+    1072
+   ],
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/numpy/_core/fromnumeric.py",
+    "0",
+    1068
+   ],
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/bench/_analyze_worker.py",
+    "0",
+    912
+   ],
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/tracemalloc.py",
+    "0",
+    656
+   ],
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/node_embedding.py",
+    "0",
+    312
+   ]
+  ],
+  "traced_total_bytes": 16828,
+  "whole_s": 0.0008071160409599543
+ },
+ {
+  "case": "LaplacianEigenmaps/ws300",
+  "case_json": {
+   "getrusage": true,
+   "graph": "ws300",
+   "graph_level": false,
+   "key": "LaplacianEigenmaps/ws300",
+   "kind": "estimator",
+   "klass": "LaplacianEigenmaps",
+   "kwargs": {
+    "dimensions": 8
+   },
+   "split": true
+  },
+  "construct_s": 2.2230669856071472e-06,
+  "fit_s": 0.3498568650102243,
+  "get_embedding_s": 2.7799978852272034e-07,
+  "n": 300,
+  "profile": [
+   "         23543 function calls in 0.367 seconds",
+   "",
+   "   Ordered by: cumulative time",
+   "   List reduced from 70 to 18 due to restriction <18>",
+   "",
+   "   ncalls  tottime  percall  cumtime  percall filename:lineno(function)",
+   "        1    0.000    0.000    0.367    0.367 /nvme0n1-disk/code/mojo-karateclub/bench/_analyze_worker.py:118(whole)",
+   "        1    0.000    0.000    0.367    0.367 /nvme0n1-disk/code/mojo-karateclub/bench/_analyze_worker.py:89(fit)",
+   "        1    0.356    0.356    0.367    0.367 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/node_embedding.py:776(fit)",
+   "        1    0.000    0.000    0.010    0.010 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/node_embedding.py:47(_kernel_csr)",
+   "        1    0.005    0.005    0.010    0.010 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/estimator.py:78(csr_from_graph)",
+   "     2700    0.001    0.000    0.003    0.000 /nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/networkx/classes/graph.py:508(__getitem__)",
+   "     2700    0.001    0.000    0.002    0.000 /nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/networkx/classes/coreviews.py:81(__getitem__)",
+   "     8101    0.001    0.000    0.001    0.000 {method 'append' of 'list' objects}",
+   "        1    0.000    0.000    0.001    0.001 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/estimator.py:64(_check_graph)",
+   "        1    0.000    0.000    0.001    0.001 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/estimator.py:48(_ensure_integrity)",
+   "        1    0.001    0.001    0.001    0.001 /nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/networkx/classes/graph.py:985(add_edges_from)",
+   "     3000    0.001    0.000    0.001    0.000 {method 'get' of 'dict' objects}",
+   "     2700    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/networkx/classes/coreviews.py:53(__getitem__)",
+   "        3    0.000    0.000    0.000    0.000 {built-in method numpy.asarray}",
+   "     2700    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/networkx/classes/coreviews.py:44(__init__)",
+   "        7    0.000    0.000    0.000    0.000 {built-in method numpy.zeros}",
+   "        5    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/_ffi.py:225(_zeros)",
+   "      300    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/networkx/classes/graph.py:1343(neighbors)",
+   "",
+   ""
+  ],
+  "rss_delta_bytes": 0,
+  "rusage": {
+   "inblock": 0,
+   "majflt": 0,
+   "minflt": 528,
+   "stime": 0.0009969999999999979,
+   "utime": 0.35084099999999996
+  },
+  "traced_bytes_top": [
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/networkx/classes/graph.py",
+    "0",
+    31584
+   ],
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/_ffi.py",
+    "0",
+    20632
+   ],
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/estimator.py",
+    "0",
+    1376
+   ],
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/numpy/_core/_methods.py",
+    "0",
+    1072
+   ],
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/numpy/_core/fromnumeric.py",
+    "0",
+    940
+   ],
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/bench/_analyze_worker.py",
+    "0",
+    912
+   ],
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/tracemalloc.py",
+    "0",
+    656
+   ],
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/node_embedding.py",
+    "0",
+    312
+   ]
+  ],
+  "traced_total_bytes": 57484,
+  "whole_s": 0.35144228592980653
+ },
+ {
+  "case": "NodeSketch/karate",
+  "case_json": {
+   "getrusage": true,
+   "graph": "karate",
+   "graph_level": false,
+   "key": "NodeSketch/karate",
+   "kind": "estimator",
+   "klass": "NodeSketch",
+   "kwargs": {
+    "dimensions": 16
+   },
+   "split": true
+  },
+  "construct_s": 2.3869797587394714e-06,
+  "fit_s": 0.0010480009950697422,
+  "get_embedding_s": 2.971501089632511e-05,
+  "n": 34,
+  "profile": [
+   "         984 function calls (983 primitive calls) in 0.001 seconds",
+   "",
+   "   Ordered by: cumulative time",
+   "   List reduced from 70 to 18 due to restriction <18>",
+   "",
+   "   ncalls  tottime  percall  cumtime  percall filename:lineno(function)",
+   "        1    0.000    0.000    0.001    0.001 /nvme0n1-disk/code/mojo-karateclub/bench/_analyze_worker.py:118(whole)",
+   "        1    0.000    0.000    0.001    0.001 /nvme0n1-disk/code/mojo-karateclub/bench/_analyze_worker.py:89(fit)",
+   "        1    0.000    0.000    0.001    0.001 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/node_embedding.py:438(fit)",
+   "        1    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/node_embedding.py:47(_kernel_csr)",
+   "        1    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/estimator.py:78(csr_from_graph)",
+   "        1    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/estimator.py:64(_check_graph)",
+   "        1    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/estimator.py:48(_ensure_integrity)",
+   "        1    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/networkx/classes/graph.py:985(add_edges_from)",
+   "      572    0.000    0.000    0.000    0.000 {method 'append' of 'list' objects}",
+   "       18    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/_ffi.py:165(_address)",
+   "       11    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/_ffi.py:179(_index)",
+   "        1    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/_ffi.py:236(_csr)",
+   "        1    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/_ffi.py:206(_csr_rows)",
+   "        2    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/estimator.py:123(_as_indices)",
+   "        3    0.000    0.000    0.000    0.000 {built-in method numpy.asarray}",
+   "        1    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/estimator.py:43(_set_seed)",
+   "        1    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/node_embedding.py:508(get_embedding)",
+   "        2    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/numpy/lib/_function_base_impl.py:1413(diff)",
+   "",
+   ""
+  ],
+  "rss_delta_bytes": 0,
+  "rusage": {
+   "inblock": 0,
+   "majflt": 0,
+   "minflt": 0,
+   "stime": 0.0,
+   "utime": 0.00047200000000002795
+  },
+  "traced_bytes_top": [
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/networkx/classes/graph.py",
+    "0",
+    7648
+   ],
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/node_embedding.py",
+    "0",
+    2304
+   ],
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/estimator.py",
+    "0",
+    1176
+   ],
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/numpy/_core/_methods.py",
+    "0",
+    1072
+   ],
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/numpy/_core/fromnumeric.py",
+    "0",
+    1068
+   ],
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/bench/_analyze_worker.py",
+    "0",
+    936
+   ],
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/_ffi.py",
+    "0",
+    728
+   ],
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/tracemalloc.py",
+    "0",
+    656
+   ],
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/numpy/lib/_function_base_impl.py",
+    "0",
+    56
+   ]
+  ],
+  "traced_total_bytes": 15644,
+  "whole_s": 0.0004439139738678932
+ },
+ {
+  "case": "NodeSketch/ws300",
+  "case_json": {
+   "getrusage": true,
+   "graph": "ws300",
+   "graph_level": false,
+   "key": "NodeSketch/ws300",
+   "kind": "estimator",
+   "klass": "NodeSketch",
+   "kwargs": {
+    "dimensions": 16
+   },
+   "split": true
+  },
+  "construct_s": 2.5330809876322746e-06,
+  "fit_s": 0.00430829101242125,
+  "get_embedding_s": 3.4346943721175194e-05,
+  "n": 300,
+  "profile": [
+   "         10110 function calls (10109 primitive calls) in 0.007 seconds",
+   "",
+   "   Ordered by: cumulative time",
+   "   List reduced from 70 to 18 due to restriction <18>",
+   "",
+   "   ncalls  tottime  percall  cumtime  percall filename:lineno(function)",
+   "        1    0.000    0.000    0.007    0.007 /nvme0n1-disk/code/mojo-karateclub/bench/_analyze_worker.py:118(whole)",
+   "        1    0.000    0.000    0.007    0.007 /nvme0n1-disk/code/mojo-karateclub/bench/_analyze_worker.py:89(fit)",
+   "        1    0.002    0.002    0.007    0.007 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/node_embedding.py:438(fit)",
+   "        1    0.000    0.000    0.004    0.004 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/node_embedding.py:47(_kernel_csr)",
+   "        1    0.002    0.002    0.004    0.004 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/estimator.py:78(csr_from_graph)",
+   "     8102    0.001    0.000    0.001    0.000 {method 'append' of 'list' objects}",
+   "        1    0.000    0.000    0.001    0.001 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/estimator.py:64(_check_graph)",
+   "        1    0.000    0.000    0.001    0.001 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/estimator.py:48(_ensure_integrity)",
+   "        1    0.001    0.001    0.001    0.001 /nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/networkx/classes/graph.py:985(add_edges_from)",
+   "        3    0.000    0.000    0.000    0.000 {built-in method numpy.asarray}",
+   "      600    0.000    0.000    0.000    0.000 {method 'update' of 'dict' objects}",
+   "      300    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/networkx/classes/graph.py:1343(neighbors)",
+   "        1    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/_ffi.py:236(_csr)",
+   "      300    0.000    0.000    0.000    0.000 {method 'get' of 'dict' objects}",
+   "       18    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/_ffi.py:165(_address)",
+   "        1    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/_ffi.py:206(_csr_rows)",
+   "       11    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/_ffi.py:179(_index)",
+   "       16    0.000    0.000    0.000    0.000 {built-in method numpy.zeros}",
+   "",
+   ""
+  ],
+  "rss_delta_bytes": 0,
+  "rusage": {
+   "inblock": 0,
+   "majflt": 0,
+   "minflt": 4,
+   "stime": 1.6000000000002124e-05,
+   "utime": 0.003162000000000109
+  },
+  "traced_bytes_top": [
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/networkx/classes/graph.py",
+    "0",
+    31544
+   ],
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/node_embedding.py",
+    "0",
+    19356
+   ],
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/estimator.py",
+    "0",
+    1376
+   ],
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/numpy/_core/_methods.py",
+    "0",
+    1072
+   ],
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/numpy/_core/fromnumeric.py",
+    "0",
+    940
+   ],
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/bench/_analyze_worker.py",
+    "0",
+    936
+   ],
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/_ffi.py",
+    "0",
+    824
+   ],
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/tracemalloc.py",
+    "0",
+    656
+   ],
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/numpy/lib/_function_base_impl.py",
+    "0",
+    56
+   ]
+  ],
+  "traced_total_bytes": 56760,
+  "whole_s": 0.0030440669506788254
+ },
+ {
+  "case": "FirstOrderLINE/karate",
+  "case_json": {
+   "getrusage": true,
+   "graph": "karate",
+   "graph_level": false,
+   "key": "FirstOrderLINE/karate",
+   "kind": "estimator",
+   "klass": "FirstOrderLINE",
+   "kwargs": {
+    "dimensions": 8,
+    "epochs": 5,
+    "mini_batch_size": 64,
+    "verbose": false
+   },
+   "split": true
+  },
+  "construct_s": 2.9689399525523186e-06,
+  "fit_s": 0.0005202259635552764,
+  "get_embedding_s": 2.6600901037454605e-07,
+  "n": 34,
+  "profile": [
+   "         244 function calls in 0.000 seconds",
+   "",
+   "   Ordered by: cumulative time",
+   "   List reduced from 32 to 18 due to restriction <18>",
+   "",
+   "   ncalls  tottime  percall  cumtime  percall filename:lineno(function)",
+   "        1    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/bench/_analyze_worker.py:118(whole)",
+   "        1    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/bench/_analyze_worker.py:89(fit)",
+   "        1    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/node_embedding.py:561(fit)",
+   "        1    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/node_embedding.py:52(_edges)",
+   "        1    0.000    0.000    0.000    0.000 {built-in method numpy.array}",
+   "       11    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/_ffi.py:165(_address)",
+   "        1    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/estimator.py:43(_set_seed)",
+   "       79    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/networkx/classes/reportviews.py:1478(__iter__)",
+   "        1    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/networkx/classes/reportviews.py:1474(__len__)",
+   "        4    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/_ffi.py:179(_index)",
+   "        1    0.000    0.000    0.000    0.000 {built-in method builtins.sum}",
+   "        6    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/_ffi.py:175(_data)",
+   "        1    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/random.py:128(seed)",
+   "       35    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/networkx/classes/reportviews.py:1475(<genexpr>)",
+   "        1    0.000    0.000    0.000    0.000 {method 'disable' of '_lsprof.Profiler' objects}",
+   "        1    0.000    0.000    0.000    0.000 {function Random.seed at 0x7a526e04f4c0}",
+   "        6    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/_ffi.py:225(_zeros)",
+   "       10    0.000    0.000    0.000    0.000 {built-in method numpy.zeros}",
+   "",
+   ""
+  ],
+  "rss_delta_bytes": 0,
+  "rusage": {
+   "inblock": 0,
+   "majflt": 0,
+   "minflt": 1,
+   "stime": 0.0,
+   "utime": 0.00025700000000006273
+  },
+  "traced_bytes_top": [
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/networkx/classes/reportviews.py",
+    "0",
+    7768
+   ],
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/_ffi.py",
+    "0",
+    2592
+   ],
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/bench/_analyze_worker.py",
+    "0",
+    912
+   ],
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/tracemalloc.py",
+    "0",
+    712
+   ],
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/node_embedding.py",
+    "0",
+    96
+   ],
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/networkx/classes/graph.py",
+    "0",
+    72
+   ]
+  ],
+  "traced_total_bytes": 12152,
+  "whole_s": 0.00019460800103843212
+ },
+ {
+  "case": "FirstOrderLINE/ws300",
+  "case_json": {
+   "getrusage": true,
+   "graph": "ws300",
+   "graph_level": false,
+   "key": "FirstOrderLINE/ws300",
+   "kind": "estimator",
+   "klass": "FirstOrderLINE",
+   "kwargs": {
+    "dimensions": 8,
+    "epochs": 5,
+    "mini_batch_size": 64,
+    "verbose": false
+   },
+   "split": true
+  },
+  "construct_s": 2.640997990965843e-06,
+  "fit_s": 0.003610521904192865,
+  "get_embedding_s": 2.6507768779993057e-07,
+  "n": 300,
+  "profile": [
+   "         1898 function calls in 0.002 seconds",
+   "",
+   "   Ordered by: cumulative time",
+   "   List reduced from 32 to 18 due to restriction <18>",
+   "",
+   "   ncalls  tottime  percall  cumtime  percall filename:lineno(function)",
+   "        1    0.000    0.000    0.002    0.002 /nvme0n1-disk/code/mojo-karateclub/bench/_analyze_worker.py:118(whole)",
+   "        1    0.000    0.000    0.002    0.002 /nvme0n1-disk/code/mojo-karateclub/bench/_analyze_worker.py:89(fit)",
+   "        1    0.001    0.001    0.002    0.002 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/node_embedding.py:561(fit)",
+   "        1    0.000    0.000    0.001    0.001 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/node_embedding.py:52(_edges)",
+   "        1    0.001    0.001    0.001    0.001 {built-in method numpy.array}",
+   "     1201    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/networkx/classes/reportviews.py:1478(__iter__)",
+   "        1    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/networkx/classes/reportviews.py:1474(__len__)",
+   "        1    0.000    0.000    0.000    0.000 {built-in method builtins.sum}",
+   "      301    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/networkx/classes/reportviews.py:1475(<genexpr>)",
+   "       11    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/_ffi.py:165(_address)",
+   "      301    0.000    0.000    0.000    0.000 {built-in method builtins.len}",
+   "        1    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/estimator.py:43(_set_seed)",
+   "        4    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/_ffi.py:179(_index)",
+   "        6    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/_ffi.py:175(_data)",
+   "        1    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/random.py:128(seed)",
+   "        1    0.000    0.000    0.000    0.000 {method 'disable' of '_lsprof.Profiler' objects}",
+   "        6    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/_ffi.py:225(_zeros)",
+   "       10    0.000    0.000    0.000    0.000 {built-in method numpy.zeros}",
+   "",
+   ""
+  ],
+  "rss_delta_bytes": 4096,
+  "rusage": {
+   "inblock": 0,
+   "majflt": 0,
+   "minflt": 1,
+   "stime": 7.899999999999574e-05,
+   "utime": 0.001778999999999975
+  },
+  "traced_bytes_top": [
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/_ffi.py",
+    "0",
+    20288
+   ],
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/networkx/classes/reportviews.py",
+    "0",
+    4072
+   ],
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/bench/_analyze_worker.py",
+    "0",
+    912
+   ],
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/tracemalloc.py",
+    "0",
+    712
+   ],
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/node_embedding.py",
+    "0",
+    96
+   ],
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/networkx/classes/graph.py",
+    "0",
+    72
+   ]
+  ],
+  "traced_total_bytes": 26152,
+  "whole_s": 0.001761003048159182
+ },
+ {
+  "case": "SecondOrderLINE/karate",
+  "case_json": {
+   "getrusage": true,
+   "graph": "karate",
+   "graph_level": false,
+   "key": "SecondOrderLINE/karate",
+   "kind": "estimator",
+   "klass": "SecondOrderLINE",
+   "kwargs": {
+    "dimensions": 8,
+    "epochs": 5,
+    "mini_batch_size": 64,
+    "verbose": false
+   },
+   "split": true
+  },
+  "construct_s": 2.6370398700237274e-06,
+  "fit_s": 0.000555063015781343,
+  "get_embedding_s": 1.1032097972929478e-05,
+  "n": 34,
+  "profile": [
+   "         272 function calls in 0.000 seconds",
+   "",
+   "   Ordered by: cumulative time",
+   "   List reduced from 41 to 18 due to restriction <18>",
+   "",
+   "   ncalls  tottime  percall  cumtime  percall filename:lineno(function)",
+   "        1    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/bench/_analyze_worker.py:118(whole)",
+   "        1    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/bench/_analyze_worker.py:89(fit)",
+   "        1    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/node_embedding.py:666(fit)",
+   "        1    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/node_embedding.py:52(_edges)",
+   "        1    0.000    0.000    0.000    0.000 {built-in method numpy.array}",
+   "       13    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/_ffi.py:165(_address)",
+   "       79    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/networkx/classes/reportviews.py:1478(__iter__)",
+   "        8    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/_ffi.py:175(_data)",
+   "        1    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/estimator.py:43(_set_seed)",
+   "        1    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/networkx/classes/reportviews.py:1474(__len__)",
+   "        1    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/node_embedding.py:733(get_embedding)",
+   "        4    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/_ffi.py:179(_index)",
+   "        1    0.000    0.000    0.000    0.000 {built-in method builtins.sum}",
+   "        1    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/random.py:128(seed)",
+   "        1    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/numpy/_core/shape_base.py:293(hstack)",
+   "       35    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/networkx/classes/reportviews.py:1475(<genexpr>)",
+   "        1    0.000    0.000    0.000    0.000 {method 'disable' of '_lsprof.Profiler' objects}",
+   "        8    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/_ffi.py:225(_zeros)",
+   "",
+   ""
+  ],
+  "rss_delta_bytes": 4096,
+  "rusage": {
+   "inblock": 0,
+   "majflt": 0,
+   "minflt": 0,
+   "stime": 2.3999999999996247e-05,
+   "utime": 0.00020100000000000673
+  },
+  "traced_bytes_top": [
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/networkx/classes/reportviews.py",
+    "0",
+    7712
+   ],
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/_ffi.py",
+    "0",
+    2544
+   ],
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/bench/_analyze_worker.py",
+    "0",
+    912
+   ],
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/tracemalloc.py",
+    "0",
+    712
+   ],
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/node_embedding.py",
+    "0",
+    224
+   ],
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/networkx/classes/graph.py",
+    "0",
+    72
+   ],
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/numpy/_core/shape_base.py",
+    "0",
+    56
+   ]
+  ],
+  "traced_total_bytes": 12232,
+  "whole_s": 0.00018637103494256735
+ },
+ {
+  "case": "SecondOrderLINE/ws300",
+  "case_json": {
+   "getrusage": true,
+   "graph": "ws300",
+   "graph_level": false,
+   "key": "SecondOrderLINE/ws300",
+   "kind": "estimator",
+   "klass": "SecondOrderLINE",
+   "kwargs": {
+    "dimensions": 8,
+    "epochs": 5,
+    "mini_batch_size": 64,
+    "verbose": false
+   },
+   "split": true
+  },
+  "construct_s": 2.713059075176716e-06,
+  "fit_s": 0.0035442219814285636,
+  "get_embedding_s": 1.812097616493702e-05,
+  "n": 300,
+  "profile": [
+   "         1926 function calls in 0.002 seconds",
+   "",
+   "   Ordered by: cumulative time",
+   "   List reduced from 41 to 18 due to restriction <18>",
+   "",
+   "   ncalls  tottime  percall  cumtime  percall filename:lineno(function)",
+   "        1    0.000    0.000    0.002    0.002 /nvme0n1-disk/code/mojo-karateclub/bench/_analyze_worker.py:118(whole)",
+   "        1    0.000    0.000    0.002    0.002 /nvme0n1-disk/code/mojo-karateclub/bench/_analyze_worker.py:89(fit)",
+   "        1    0.001    0.001    0.002    0.002 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/node_embedding.py:666(fit)",
+   "        1    0.000    0.000    0.001    0.001 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/node_embedding.py:52(_edges)",
+   "        1    0.001    0.001    0.001    0.001 {built-in method numpy.array}",
+   "     1201    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/networkx/classes/reportviews.py:1478(__iter__)",
+   "        1    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/networkx/classes/reportviews.py:1474(__len__)",
+   "        1    0.000    0.000    0.000    0.000 {built-in method builtins.sum}",
+   "      301    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/networkx/classes/reportviews.py:1475(<genexpr>)",
+   "       13    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/_ffi.py:165(_address)",
+   "        8    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/_ffi.py:175(_data)",
+   "        4    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/_ffi.py:179(_index)",
+   "        1    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/node_embedding.py:733(get_embedding)",
+   "      302    0.000    0.000    0.000    0.000 {built-in method builtins.len}",
+   "        1    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/estimator.py:43(_set_seed)",
+   "        1    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/numpy/_core/shape_base.py:293(hstack)",
+   "        1    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/random.py:128(seed)",
+   "        8    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/_ffi.py:225(_zeros)",
+   "",
+   ""
+  ],
+  "rss_delta_bytes": 4096,
+  "rusage": {
+   "inblock": 0,
+   "majflt": 0,
+   "minflt": 1,
+   "stime": 0.0,
+   "utime": 0.0017920000000000158
+  },
+  "traced_bytes_top": [
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/_ffi.py",
+    "0",
+    19568
+   ],
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/networkx/classes/reportviews.py",
+    "0",
+    4016
+   ],
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/bench/_analyze_worker.py",
+    "0",
+    912
+   ],
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/tracemalloc.py",
+    "0",
+    712
+   ],
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/node_embedding.py",
+    "0",
+    224
+   ],
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/networkx/classes/graph.py",
+    "0",
+    72
+   ],
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/numpy/_core/shape_base.py",
+    "0",
+    56
+   ]
+  ],
+  "traced_total_bytes": 25560,
+  "whole_s": 0.001681783003732562
+ },
+ {
+  "case": "WeisfeilerLehmanHashing/ws300",
+  "case_json": {
+   "construct": "wl",
+   "getrusage": true,
+   "graph": "ws300",
+   "key": "WeisfeilerLehmanHashing/ws300",
+   "kind": "obj",
+   "klass": "WeisfeilerLehmanHashing",
+   "kwargs": {
+    "attributed": false,
+    "erase_base_features": false,
+    "wl_iterations": 3
+   }
+  },
+  "n": 300,
+  "profile": [
+   "         13066 function calls in 0.008 seconds",
+   "",
+   "   Ordered by: cumulative time",
+   "   List reduced from 67 to 18 due to restriction <18>",
+   "",
+   "   ncalls  tottime  percall  cumtime  percall filename:lineno(function)",
+   "        1    0.000    0.000    0.008    0.008 /nvme0n1-disk/code/mojo-karateclub/bench/_analyze_worker.py:135(whole)",
+   "        1    0.000    0.000    0.008    0.008 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/utils.py:497(__init__)",
+   "        1    0.002    0.002    0.003    0.003 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/estimator.py:78(csr_from_graph)",
+   "        1    0.002    0.002    0.003    0.003 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/utils.py:528(_do_recursions)",
+   "        1    0.000    0.000    0.002    0.002 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/utils.py:516(_set_features)",
+   "        1    0.001    0.001    0.001    0.001 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/utils.py:450(_base_labels)",
+   "     8102    0.001    0.000    0.001    0.000 {method 'append' of 'list' objects}",
+   "      300    0.001    0.000    0.001    0.000 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/utils.py:572(_run)",
+   "        3    0.000    0.000    0.000    0.000 {built-in method numpy.asarray}",
+   "      300    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/networkx/classes/reportviews.py:619(__call__)",
+   "      900    0.000    0.000    0.000    0.000 {method 'hex' of 'bytes' objects}",
+   "      300    0.000    0.000    0.000    0.000 {built-in method numpy.frombuffer}",
+   "     1507    0.000    0.000    0.000    0.000 {built-in method builtins.len}",
+   "        4    0.000    0.000    0.000    0.000 {built-in method builtins.max}",
+   "      300    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/networkx/classes/reportviews.py:713(__getitem__)",
+   "      300    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/networkx/classes/graph.py:1343(neighbors)",
+   "      301    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/utils.py:472(<genexpr>)",
+   "        2    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/numpy/_core/fromnumeric.py:2876(cumsum)",
+   "",
+   ""
+  ],
+  "rss_delta_bytes": 86016,
+  "rusage": {
+   "inblock": 0,
+   "majflt": 0,
+   "minflt": 11,
+   "stime": 0.0,
+   "utime": 0.0041160000000000085
+  },
+  "whole_s": 0.004008018062449992
+ },
+ {
+  "case": "RandomWalker/ws300",
+  "case_json": {
+   "construct": "walker",
+   "getrusage": true,
+   "graph": "ws300",
+   "key": "RandomWalker/ws300",
+   "kind": "obj",
+   "klass": "RandomWalker",
+   "kwargs": {
+    "walk_length": 40,
+    "walk_number": 10
+   }
+  },
+  "n": 300,
+  "profile": [
+   "         127900 function calls in 0.105 seconds",
+   "",
+   "   Ordered by: cumulative time",
+   "   List reduced from 55 to 18 due to restriction <18>",
+   "",
+   "   ncalls  tottime  percall  cumtime  percall filename:lineno(function)",
+   "        1    0.000    0.000    0.105    0.105 /nvme0n1-disk/code/mojo-karateclub/bench/_analyze_worker.py:135(whole)",
+   "        1    0.035    0.035    0.105    0.105 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/utils.py:156(do_walks)",
+   "        1    0.046    0.046    0.065    0.065 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/utils.py:88(_split_walks)",
+   "   127202    0.020    0.000    0.020    0.000 {method 'append' of 'list' objects}",
+   "        1    0.003    0.003    0.005    0.005 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/estimator.py:78(csr_from_graph)",
+   "        1    0.001    0.001    0.001    0.001 {method 'tolist' of 'numpy.ndarray' objects}",
+   "        3    0.000    0.000    0.000    0.000 {built-in method numpy.asarray}",
+   "      300    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/networkx/classes/graph.py:1343(neighbors)",
+   "        1    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/_ffi.py:236(_csr)",
+   "        3    0.000    0.000    0.000    0.000 {built-in method numpy.zeros}",
+   "        1    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/_ffi.py:206(_csr_rows)",
+   "      301    0.000    0.000    0.000    0.000 {built-in method builtins.iter}",
+   "        2    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/estimator.py:123(_as_indices)",
+   "        2    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/numpy/lib/_function_base_impl.py:1413(diff)",
+   "        1    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/utils.py:56(mt_init_genrand)",
+   "        5    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/_ffi.py:165(_address)",
+   "        1    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/numpy/_core/fromnumeric.py:2876(cumsum)",
+   "        1    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/numpy/_core/fromnumeric.py:48(_wrapfunc)",
+   "",
+   ""
+  ],
+  "rss_delta_bytes": 45056,
+  "rusage": {
+   "inblock": 0,
+   "majflt": 0,
+   "minflt": 1518,
+   "stime": 0.002945000000000003,
+   "utime": 0.0454009999999998
+  },
+  "whole_s": 0.04613078408874571
+ },
+ {
+  "case": "BiasedRandomWalker/ws300",
+  "case_json": {
+   "construct": "walker",
+   "getrusage": true,
+   "graph": "ws300",
+   "key": "BiasedRandomWalker/ws300",
+   "kind": "obj",
+   "klass": "BiasedRandomWalker",
+   "kwargs": {
+    "p": 0.5,
+    "q": 2.0,
+    "walk_length": 40,
+    "walk_number": 10
+   }
+  },
+  "n": 300,
+  "profile": [
+   "         127940 function calls (127939 primitive calls) in 0.111 seconds",
+   "",
+   "   Ordered by: cumulative time",
+   "   List reduced from 70 to 18 due to restriction <18>",
+   "",
+   "   ncalls  tottime  percall  cumtime  percall filename:lineno(function)",
+   "        1    0.000    0.000    0.111    0.111 /nvme0n1-disk/code/mojo-karateclub/bench/_analyze_worker.py:135(whole)",
+   "        1    0.039    0.039    0.111    0.111 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/utils.py:247(do_walks)",
+   "        1    0.048    0.048    0.068    0.068 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/utils.py:88(_split_walks)",
+   "   127202    0.020    0.000    0.020    0.000 {method 'append' of 'list' objects}",
+   "        1    0.002    0.002    0.004    0.004 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/estimator.py:78(csr_from_graph)",
+   "        1    0.001    0.001    0.001    0.001 {method 'tolist' of 'numpy.ndarray' objects}",
+   "        3    0.000    0.000    0.000    0.000 {built-in method numpy.asarray}",
+   "      300    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/networkx/classes/graph.py:1343(neighbors)",
+   "        1    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/_ffi.py:236(_csr)",
+   "        5    0.000    0.000    0.000    0.000 {built-in method numpy.zeros}",
+   "        1    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/_ffi.py:206(_csr_rows)",
+   "        1    0.000    0.000    0.000    0.000 <class 'networkx.utils.decorators.argmap'> compilation 8:1(argmap_is_weighted_5)",
+   "      2/1    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/networkx/utils/backends.py:541(_call_if_no_backends_installed)",
+   "        1    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/networkx/classes/function.py:1156(is_weighted)",
+   "        2    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/estimator.py:123(_as_indices)",
+   "        8    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/_ffi.py:165(_address)",
+   "        2    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/numpy/lib/_function_base_impl.py:1413(diff)",
+   "      301    0.000    0.000    0.000    0.000 {built-in method builtins.iter}",
+   "",
+   ""
+  ],
+  "rss_delta_bytes": 405504,
+  "rusage": {
+   "inblock": 0,
+   "majflt": 0,
+   "minflt": 1516,
+   "stime": 0.0050020000000000064,
+   "utime": 0.04701599999999995
+  },
+  "whole_s": 0.054634580039419234
+ },
+ {
+  "case": "EulerianDiffuser/karate",
+  "case_json": {
+   "construct": "diffuser",
+   "getrusage": true,
+   "graph": "karate",
+   "key": "EulerianDiffuser/karate",
+   "kind": "obj",
+   "klass": "EulerianDiffuser",
+   "kwargs": {
+    "diffusion_cover": 80,
+    "diffusion_number": 10
+   }
+  },
+  "n": 34,
+  "profile": [
+   "         713 function calls in 0.025 seconds",
+   "",
+   "   Ordered by: cumulative time",
+   "   List reduced from 58 to 18 due to restriction <18>",
+   "",
+   "   ncalls  tottime  percall  cumtime  percall filename:lineno(function)",
+   "        1    0.000    0.000    0.025    0.025 /nvme0n1-disk/code/mojo-karateclub/bench/_analyze_worker.py:135(whole)",
+   "        1    0.024    0.024    0.025    0.025 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/utils.py:384(do_diffusions)",
+   "        1    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/estimator.py:78(csr_from_graph)",
+   "      471    0.000    0.000    0.000    0.000 {method 'append' of 'list' objects}",
+   "        1    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/_ffi.py:236(_csr)",
+   "       15    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/_ffi.py:165(_address)",
+   "        1    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/utils.py:313(_scratch)",
+   "       13    0.000    0.000    0.000    0.000 {built-in method numpy.zeros}",
+   "       13    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/_ffi.py:179(_index)",
+   "        3    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/numpy/lib/_function_base_impl.py:1413(diff)",
+   "        1    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/_ffi.py:206(_csr_rows)",
+   "        2    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/estimator.py:123(_as_indices)",
+   "        1    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/utils.py:56(mt_init_genrand)",
+   "        1    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/numpy/_core/fromnumeric.py:2876(cumsum)",
+   "        3    0.000    0.000    0.000    0.000 {built-in method numpy.asarray}",
+   "        2    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/numpy/_core/fromnumeric.py:2474(any)",
+   "        1    0.000    0.000    0.000    0.000 {method 'disable' of '_lsprof.Profiler' objects}",
+   "        1    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/numpy/_core/fromnumeric.py:48(_wrapfunc)",
+   "",
+   ""
+  ],
+  "rss_delta_bytes": 65536,
+  "rusage": {
+   "inblock": 0,
+   "majflt": 0,
+   "minflt": 6,
+   "stime": 2.3000000000009124e-05,
+   "utime": 0.021106999999999987
+  },
+  "whole_s": 0.02069427806418389
+ },
+ {
+  "case": "LDP/ba2000_bins64",
+  "case_json": {
+   "getrusage": true,
+   "graph": "ba2000",
+   "graph_level": true,
+   "key": "LDP/ba2000_bins64",
+   "kind": "estimator",
+   "klass": "LDP",
+   "kwargs": {
+    "bins": 64
+   },
+   "split": false
+  },
+  "n": 2000,
+  "profile": [
+   "         54086 function calls in 0.032 seconds",
+   "",
+   "   Ordered by: cumulative time",
+   "   List reduced from 65 to 18 due to restriction <18>",
+   "",
+   "   ncalls  tottime  percall  cumtime  percall filename:lineno(function)",
+   "        1    0.000    0.000    0.032    0.032 /nvme0n1-disk/code/mojo-karateclub/bench/_analyze_worker.py:118(whole)",
+   "        1    0.000    0.000    0.031    0.031 /nvme0n1-disk/code/mojo-karateclub/bench/_analyze_worker.py:89(fit)",
+   "        1    0.000    0.000    0.031    0.031 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/graph_embedding.py:113(fit)",
+   "        1    0.000    0.000    0.026    0.026 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/graph_embedding.py:90(_calculate_ldp)",
+   "        1    0.000    0.000    0.026    0.026 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/graph_embedding.py:31(_graph_csr)",
+   "        1    0.014    0.014    0.026    0.026 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/estimator.py:78(csr_from_graph)",
+   "    41947    0.007    0.000    0.007    0.000 {method 'append' of 'list' objects}",
+   "        1    0.000    0.000    0.005    0.005 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/estimator.py:71(_check_graphs)",
+   "        1    0.000    0.000    0.005    0.005 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/estimator.py:64(_check_graph)",
+   "        1    0.000    0.000    0.005    0.005 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/estimator.py:48(_ensure_integrity)",
+   "        1    0.003    0.003    0.005    0.005 /nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/networkx/classes/graph.py:985(add_edges_from)",
+   "        3    0.003    0.001    0.003    0.001 {built-in method numpy.asarray}",
+   "     2000    0.001    0.000    0.001    0.000 /nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/networkx/classes/graph.py:1343(neighbors)",
+   "     4000    0.001    0.000    0.001    0.000 {method 'update' of 'dict' objects}",
+   "     2000    0.001    0.000    0.001    0.000 {method 'get' of 'dict' objects}",
+   "     2002    0.000    0.000    0.000    0.000 {built-in method builtins.iter}",
+   "     2005    0.000    0.000    0.000    0.000 {built-in method builtins.len}",
+   "        1    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/estimator.py:56(_check_indexing)",
+   "",
+   ""
+  ],
+  "rss_delta_bytes": 20480,
+  "rusage": {
+   "inblock": 0,
+   "majflt": 0,
+   "minflt": 3,
+   "stime": 3.300000000000525e-05,
+   "utime": 0.013672000000000128
+  },
+  "whole_s": 0.00881032389588654
+ },
+ {
+  "case": "NodeSketch/ba2000",
+  "case_json": {
+   "getrusage": true,
+   "graph": "ba2000",
+   "graph_level": false,
+   "key": "NodeSketch/ba2000",
+   "kind": "estimator",
+   "klass": "NodeSketch",
+   "kwargs": {
+    "dimensions": 16
+   },
+   "split": true
+  },
+  "construct_s": 3.029010258615017e-06,
+  "fit_s": 0.03291294805239886,
+  "get_embedding_s": 6.586301606148481e-05,
+  "n": 2000,
+  "profile": [
+   "         54156 function calls (54155 primitive calls) in 0.046 seconds",
+   "",
+   "   Ordered by: cumulative time",
+   "   List reduced from 70 to 18 due to restriction <18>",
+   "",
+   "   ncalls  tottime  percall  cumtime  percall filename:lineno(function)",
+   "        1    0.000    0.000    0.046    0.046 /nvme0n1-disk/code/mojo-karateclub/bench/_analyze_worker.py:118(whole)",
+   "        1    0.000    0.000    0.045    0.045 /nvme0n1-disk/code/mojo-karateclub/bench/_analyze_worker.py:89(fit)",
+   "        1    0.014    0.014    0.045    0.045 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/node_embedding.py:438(fit)",
+   "        1    0.000    0.000    0.024    0.024 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/node_embedding.py:47(_kernel_csr)",
+   "        1    0.013    0.013    0.024    0.024 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/estimator.py:78(csr_from_graph)",
+   "    41948    0.007    0.000    0.007    0.000 {method 'append' of 'list' objects}",
+   "        1    0.000    0.000    0.006    0.006 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/estimator.py:64(_check_graph)",
+   "        1    0.000    0.000    0.006    0.006 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/estimator.py:48(_ensure_integrity)",
+   "        1    0.004    0.004    0.006    0.006 /nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/networkx/classes/graph.py:985(add_edges_from)",
+   "        3    0.002    0.001    0.002    0.001 {built-in method numpy.asarray}",
+   "     2000    0.001    0.000    0.001    0.000 /nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/networkx/classes/graph.py:1343(neighbors)",
+   "     2000    0.001    0.000    0.001    0.000 {method 'get' of 'dict' objects}",
+   "     4000    0.001    0.000    0.001    0.000 {method 'update' of 'dict' objects}",
+   "       16    0.001    0.000    0.001    0.000 {built-in method numpy.zeros}",
+   "        6    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/_ffi.py:225(_zeros)",
+   "2008/2007    0.000    0.000    0.000    0.000 {built-in method builtins.len}",
+   "     2002    0.000    0.000    0.000    0.000 {built-in method builtins.iter}",
+   "        1    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/estimator.py:56(_check_indexing)",
+   "",
+   ""
+  ],
+  "rss_delta_bytes": 0,
+  "rusage": {
+   "inblock": 0,
+   "majflt": 0,
+   "minflt": 0,
+   "stime": 8.000000000008e-06,
+   "utime": 0.024164999999999992
+  },
+  "traced_bytes_top": [
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/networkx/classes/graph.py",
+    "0",
+    232232
+   ],
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/node_embedding.py",
+    "0",
+    128156
+   ],
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/estimator.py",
+    "0",
+    55944
+   ],
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/_ffi.py",
+    "0",
+    1112
+   ],
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/numpy/_core/_methods.py",
+    "0",
+    1072
+   ],
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/bench/_analyze_worker.py",
+    "0",
+    936
+   ],
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/numpy/_core/fromnumeric.py",
+    "0",
+    889
+   ],
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/tracemalloc.py",
+    "0",
+    656
+   ],
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/numpy/lib/_function_base_impl.py",
+    "0",
+    56
+   ]
+  ],
+  "traced_total_bytes": 421053,
+  "whole_s": 0.024691585917025805
+ },
+ {
+  "case": "FirstOrderLINE/ba2000",
+  "case_json": {
+   "getrusage": true,
+   "graph": "ba2000",
+   "graph_level": false,
+   "key": "FirstOrderLINE/ba2000",
+   "kind": "estimator",
+   "klass": "FirstOrderLINE",
+   "kwargs": {
+    "dimensions": 8,
+    "epochs": 5,
+    "mini_batch_size": 64,
+    "verbose": false
+   },
+   "split": true
+  },
+  "construct_s": 2.8730137273669243e-06,
+  "fit_s": 0.026308505097404122,
+  "get_embedding_s": 2.3795291781425476e-07,
+  "n": 2000,
+  "profile": [
+   "         10089 function calls in 0.018 seconds",
+   "",
+   "   Ordered by: cumulative time",
+   "   List reduced from 32 to 18 due to restriction <18>",
+   "",
+   "   ncalls  tottime  percall  cumtime  percall filename:lineno(function)",
+   "        1    0.000    0.000    0.018    0.018 /nvme0n1-disk/code/mojo-karateclub/bench/_analyze_worker.py:118(whole)",
+   "        1    0.000    0.000    0.018    0.018 /nvme0n1-disk/code/mojo-karateclub/bench/_analyze_worker.py:89(fit)",
+   "        1    0.011    0.011    0.018    0.018 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/node_embedding.py:561(fit)",
+   "        1    0.000    0.000    0.007    0.007 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/node_embedding.py:52(_edges)",
+   "        1    0.003    0.003    0.007    0.007 {built-in method numpy.array}",
+   "     5992    0.002    0.000    0.002    0.000 /nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/networkx/classes/reportviews.py:1478(__iter__)",
+   "        1    0.000    0.000    0.001    0.001 /nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/networkx/classes/reportviews.py:1474(__len__)",
+   "        1    0.000    0.000    0.001    0.001 {built-in method builtins.sum}",
+   "     2001    0.001    0.000    0.001    0.000 /nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/networkx/classes/reportviews.py:1475(<genexpr>)",
+   "     2001    0.000    0.000    0.000    0.000 {built-in method builtins.len}",
+   "       11    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/_ffi.py:165(_address)",
+   "        6    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/_ffi.py:175(_data)",
+   "        6    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/_ffi.py:225(_zeros)",
+   "       10    0.000    0.000    0.000    0.000 {built-in method numpy.zeros}",
+   "        4    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/_ffi.py:179(_index)",
+   "        1    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/estimator.py:43(_set_seed)",
+   "        1    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/random.py:128(seed)",
+   "        1    0.000    0.000    0.000    0.000 {method 'disable' of '_lsprof.Profiler' objects}",
+   "",
+   ""
+  ],
+  "rss_delta_bytes": 36864,
+  "rusage": {
+   "inblock": 0,
+   "majflt": 0,
+   "minflt": 3,
+   "stime": 2.4999999999997247e-05,
+   "utime": 0.014599000000000029
+  },
+  "traced_bytes_top": [
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/_ffi.py",
+    "0",
+    128416
+   ],
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/networkx/classes/reportviews.py",
+    "0",
+    116016
+   ],
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/bench/_analyze_worker.py",
+    "0",
+    912
+   ],
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/tracemalloc.py",
+    "0",
+    712
+   ],
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/node_embedding.py",
+    "0",
+    152
+   ],
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/networkx/classes/graph.py",
+    "0",
+    72
+   ]
+  ],
+  "traced_total_bytes": 246280,
+  "whole_s": 0.014243273995816708
+ },
+ {
+  "case": "SecondOrderLINE/ba2000",
+  "case_json": {
+   "getrusage": true,
+   "graph": "ba2000",
+   "graph_level": false,
+   "key": "SecondOrderLINE/ba2000",
+   "kind": "estimator",
+   "klass": "SecondOrderLINE",
+   "kwargs": {
+    "dimensions": 8,
+    "epochs": 5,
+    "mini_batch_size": 64,
+    "verbose": false
+   },
+   "split": true
+  },
+  "construct_s": 2.891058102250099e-06,
+  "fit_s": 0.026233522919937968,
+  "get_embedding_s": 7.088703569024801e-05,
+  "n": 2000,
+  "profile": [
+   "         10117 function calls in 0.017 seconds",
+   "",
+   "   Ordered by: cumulative time",
+   "   List reduced from 41 to 18 due to restriction <18>",
+   "",
+   "   ncalls  tottime  percall  cumtime  percall filename:lineno(function)",
+   "        1    0.000    0.000    0.017    0.017 /nvme0n1-disk/code/mojo-karateclub/bench/_analyze_worker.py:118(whole)",
+   "        1    0.000    0.000    0.017    0.017 /nvme0n1-disk/code/mojo-karateclub/bench/_analyze_worker.py:89(fit)",
+   "        1    0.010    0.010    0.017    0.017 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/node_embedding.py:666(fit)",
+   "        1    0.000    0.000    0.007    0.007 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/node_embedding.py:52(_edges)",
+   "        1    0.004    0.004    0.007    0.007 {built-in method numpy.array}",
+   "     5992    0.002    0.000    0.002    0.000 /nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/networkx/classes/reportviews.py:1478(__iter__)",
+   "        1    0.000    0.000    0.001    0.001 /nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/networkx/classes/reportviews.py:1474(__len__)",
+   "        1    0.000    0.000    0.001    0.001 {built-in method builtins.sum}",
+   "     2001    0.001    0.000    0.001    0.000 /nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/networkx/classes/reportviews.py:1475(<genexpr>)",
+   "     2002    0.000    0.000    0.000    0.000 {built-in method builtins.len}",
+   "        1    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/node_embedding.py:733(get_embedding)",
+   "        1    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/numpy/_core/shape_base.py:293(hstack)",
+   "       13    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/_ffi.py:165(_address)",
+   "        1    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/estimator.py:43(_set_seed)",
+   "        8    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/_ffi.py:175(_data)",
+   "        1    0.000    0.000    0.000    0.000 {method 'disable' of '_lsprof.Profiler' objects}",
+   "        4    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/_ffi.py:179(_index)",
+   "        1    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/random.py:128(seed)",
+   "",
+   ""
+  ],
+  "rss_delta_bytes": 32768,
+  "rusage": {
+   "inblock": 0,
+   "majflt": 0,
+   "minflt": 1,
+   "stime": 0.0,
+   "utime": 0.013966000000000367
+  },
+  "traced_bytes_top": [
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/_ffi.py",
+    "0",
+    128656
+   ],
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/networkx/classes/reportviews.py",
+    "0",
+    115736
+   ],
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/bench/_analyze_worker.py",
+    "0",
+    912
+   ],
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/tracemalloc.py",
+    "0",
+    712
+   ],
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/numpy/_core/shape_base.py",
+    "0",
+    336
+   ],
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/node_embedding.py",
+    "0",
+    224
+   ],
+   [
+    "/nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/networkx/classes/graph.py",
+    "0",
+    72
+   ]
+  ],
+  "traced_total_bytes": 246648,
+  "whole_s": 0.014374817023053765
+ },
+ {
+  "case": "WeisfeilerLehmanHashing/ba2000",
+  "case_json": {
+   "construct": "wl",
+   "getrusage": true,
+   "graph": "ba2000",
+   "key": "WeisfeilerLehmanHashing/ba2000",
+   "kind": "obj",
+   "klass": "WeisfeilerLehmanHashing",
+   "kwargs": {
+    "attributed": false,
+    "erase_base_features": false,
+    "wl_iterations": 3
+   }
+  },
+  "n": 2000,
+  "profile": [
+   "         74112 function calls in 0.051 seconds",
+   "",
+   "   Ordered by: cumulative time",
+   "   List reduced from 67 to 18 due to restriction <18>",
+   "",
+   "   ncalls  tottime  percall  cumtime  percall filename:lineno(function)",
+   "        1    0.000    0.000    0.051    0.051 /nvme0n1-disk/code/mojo-karateclub/bench/_analyze_worker.py:135(whole)",
+   "        1    0.000    0.000    0.050    0.050 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/utils.py:497(__init__)",
+   "        1    0.013    0.013    0.022    0.022 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/utils.py:528(_do_recursions)",
+   "        1    0.011    0.011    0.019    0.019 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/estimator.py:78(csr_from_graph)",
+   "        1    0.000    0.000    0.010    0.010 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/utils.py:516(_set_features)",
+   "        1    0.004    0.004    0.009    0.009 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/utils.py:450(_base_labels)",
+   "     2000    0.006    0.000    0.009    0.000 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/utils.py:572(_run)",
+   "    41948    0.007    0.000    0.007    0.000 {method 'append' of 'list' objects}",
+   "     2000    0.001    0.000    0.002    0.000 /nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/networkx/classes/reportviews.py:619(__call__)",
+   "        3    0.002    0.001    0.002    0.001 {built-in method numpy.asarray}",
+   "     6000    0.001    0.000    0.001    0.000 {method 'hex' of 'bytes' objects}",
+   "     2000    0.001    0.000    0.001    0.000 {built-in method numpy.frombuffer}",
+   "    10007    0.001    0.000    0.001    0.000 {built-in method builtins.len}",
+   "     2000    0.001    0.000    0.001    0.000 /nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/networkx/classes/reportviews.py:713(__getitem__)",
+   "     2000    0.001    0.000    0.001    0.000 /nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/networkx/classes/graph.py:1343(neighbors)",
+   "        4    0.000    0.000    0.001    0.000 {built-in method builtins.max}",
+   "     2001    0.000    0.000    0.001    0.000 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/utils.py:472(<genexpr>)",
+   "     2000    0.000    0.000    0.000    0.000 {method 'encode' of 'str' objects}",
+   "",
+   ""
+  ],
+  "rss_delta_bytes": 135168,
+  "rusage": {
+   "inblock": 0,
+   "majflt": 0,
+   "minflt": 6,
+   "stime": 8.999999999981245e-06,
+   "utime": 0.024202999999999975
+  },
+  "whole_s": 0.024037100025452673
+ },
+ {
+  "case": "RandomWalker/ba2000",
+  "case_json": {
+   "construct": "walker",
+   "getrusage": true,
+   "graph": "ba2000",
+   "key": "RandomWalker/ba2000",
+   "kind": "obj",
+   "klass": "RandomWalker",
+   "kwargs": {
+    "walk_length": 40,
+    "walk_number": 10
+   }
+  },
+  "n": 2000,
+  "profile": [
+   "         840046 function calls in 0.825 seconds",
+   "",
+   "   Ordered by: cumulative time",
+   "   List reduced from 55 to 18 due to restriction <18>",
+   "",
+   "   ncalls  tottime  percall  cumtime  percall filename:lineno(function)",
+   "        1    0.000    0.000    0.825    0.825 /nvme0n1-disk/code/mojo-karateclub/bench/_analyze_worker.py:135(whole)",
+   "        1    0.265    0.265    0.825    0.825 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/utils.py:156(do_walks)",
+   "        1    0.378    0.378    0.537    0.537 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/utils.py:88(_split_walks)",
+   "   835948    0.143    0.000    0.143    0.000 {method 'append' of 'list' objects}",
+   "        1    0.023    0.023    0.023    0.023 {method 'tolist' of 'numpy.ndarray' objects}",
+   "        1    0.012    0.012    0.022    0.022 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/estimator.py:78(csr_from_graph)",
+   "        3    0.002    0.001    0.002    0.001 {built-in method numpy.asarray}",
+   "     2000    0.001    0.000    0.001    0.000 /nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/networkx/classes/graph.py:1343(neighbors)",
+   "        3    0.001    0.000    0.001    0.000 {built-in method numpy.zeros}",
+   "     2001    0.000    0.000    0.000    0.000 {built-in method builtins.iter}",
+   "        1    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/_ffi.py:236(_csr)",
+   "        1    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/_ffi.py:206(_csr_rows)",
+   "        2    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/estimator.py:123(_as_indices)",
+   "        1    0.000    0.000    0.000    0.000 {built-in method builtins.sorted}",
+   "        1    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/numpy/_core/fromnumeric.py:2876(cumsum)",
+   "        5    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/_ffi.py:165(_address)",
+   "        1    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/numpy/_core/fromnumeric.py:48(_wrapfunc)",
+   "        2    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/numpy/lib/_function_base_impl.py:1413(diff)",
+   "",
+   ""
+  ],
+  "rss_delta_bytes": 1048576,
+  "rusage": {
+   "inblock": 0,
+   "majflt": 0,
+   "minflt": 16051,
+   "stime": 0.03901300000000002,
+   "utime": 0.35420600000000046
+  },
+  "whole_s": 0.3972731960238889
+ },
+ {
+  "case": "BiasedRandomWalker/ba2000",
+  "case_json": {
+   "construct": "walker",
+   "getrusage": true,
+   "graph": "ba2000",
+   "key": "BiasedRandomWalker/ba2000",
+   "kind": "obj",
+   "klass": "BiasedRandomWalker",
+   "kwargs": {
+    "p": 0.5,
+    "q": 2.0,
+    "walk_length": 40,
+    "walk_number": 10
+   }
+  },
+  "n": 2000,
+  "profile": [
+   "         840086 function calls (840085 primitive calls) in 0.874 seconds",
+   "",
+   "   Ordered by: cumulative time",
+   "   List reduced from 70 to 18 due to restriction <18>",
+   "",
+   "   ncalls  tottime  percall  cumtime  percall filename:lineno(function)",
+   "        1    0.000    0.000    0.874    0.874 /nvme0n1-disk/code/mojo-karateclub/bench/_analyze_worker.py:135(whole)",
+   "        1    0.324    0.324    0.874    0.874 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/utils.py:247(do_walks)",
+   "        1    0.360    0.360    0.527    0.527 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/utils.py:88(_split_walks)",
+   "   835948    0.153    0.000    0.153    0.000 {method 'append' of 'list' objects}",
+   "        1    0.012    0.012    0.022    0.022 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/estimator.py:78(csr_from_graph)",
+   "        1    0.021    0.021    0.021    0.021 {method 'tolist' of 'numpy.ndarray' objects}",
+   "        3    0.002    0.001    0.002    0.001 {built-in method numpy.asarray}",
+   "     2000    0.001    0.000    0.001    0.000 /nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/networkx/classes/graph.py:1343(neighbors)",
+   "        5    0.001    0.000    0.001    0.000 {built-in method numpy.zeros}",
+   "     2001    0.000    0.000    0.000    0.000 {built-in method builtins.iter}",
+   "        8    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/_ffi.py:165(_address)",
+   "        1    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/_ffi.py:236(_csr)",
+   "        2    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/estimator.py:123(_as_indices)",
+   "        1    0.000    0.000    0.000    0.000 <class 'networkx.utils.decorators.argmap'> compilation 8:1(argmap_is_weighted_5)",
+   "        1    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/_ffi.py:206(_csr_rows)",
+   "      2/1    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/.pixi/envs/default/lib/python3.13/site-packages/networkx/utils/backends.py:541(_call_if_no_backends_installed)",
+   "        1    0.000    0.000    0.000    0.000 {method 'disable' of '_lsprof.Profiler' objects}",
+   "        1    0.000    0.000    0.000    0.000 /nvme0n1-disk/code/mojo-karateclub/python/mojokarateclub/utils.py:56(mt_init_genrand)",
+   "",
+   ""
+  ],
+  "rss_delta_bytes": 1032192,
+  "rusage": {
+   "inblock": 0,
+   "majflt": 0,
+   "minflt": 15846,
+   "stime": 0.03295899999999996,
+   "utime": 0.40840999999999994
+  },
+  "whole_s": 0.4549111860105768
+ }
+]
